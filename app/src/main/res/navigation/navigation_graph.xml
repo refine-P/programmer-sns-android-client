@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/navigation_graph"
+    app:startDestination="@+id/timeline_fragment" >
+
+    <fragment
+        android:id="@+id/timeline_fragment"
+        android:name="com.example.programmersnsandroidclient.TimelineFragment"
+        android:label="fragment_timeline"
+        tools:layout="@layout/fragment_timeline" >
+        <action
+            android:id="@+id/action_send"
+            app:destination="@id/send_sns_post" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/send_sns_post"
+        android:name="com.example.programmersnsandroidclient.SendSnsPostFragment"
+        android:label="fragment_send_sns_post"
+        tools:layout="@layout/fragment_send_sns_post" />
+
+</navigation>
