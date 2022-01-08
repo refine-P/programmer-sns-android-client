@@ -8,13 +8,9 @@ import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.programmersnsandroidclient.databinding.FragmentSendSnsPostBinding
-import com.example.programmersnsandroidclient.sns.SnsModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 class SendSnsPostFragment : Fragment() {
-    private val scope = CoroutineScope(Dispatchers.IO)
+    private val snsViewModel: SnsViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -22,9 +18,7 @@ class SendSnsPostFragment : Fragment() {
     ): View {
         val binding = FragmentSendSnsPostBinding.inflate(inflater, container, false)
         binding.sendButton.setOnClickListener {
-            scope.launch {
-                SnsModel.sendSnsPost(binding.snsPostContent.text.toString())
-            }
+            snsViewModel.sendSnsPost(binding.snsPostContent.text.toString())
             findNavController().popBackStack()
         }
         return binding.root

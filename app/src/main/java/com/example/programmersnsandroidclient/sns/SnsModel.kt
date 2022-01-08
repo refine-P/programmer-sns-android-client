@@ -1,14 +1,14 @@
 package com.example.programmersnsandroidclient.sns
 
-import android.util.Log
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 const val INITIAL_TIMELINE_NUM_LIMIT = 50
 const val INCREMENTAL_TIMELINE_NUM_LIMIT = 30
 
-object SnsModel {
+class SnsModel {
     private val service = Retrofit.Builder().apply {
         baseUrl("https://versatileapi.herokuapp.com/api/")
         addConverterFactory(GsonConverterFactory.create())

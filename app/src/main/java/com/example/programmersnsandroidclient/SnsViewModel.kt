@@ -14,6 +14,7 @@ class SnsViewModel(
     val isRefreshing: MutableLiveData<Boolean> = MutableLiveData(false)
 ) : ViewModel() {
     private val scope = CoroutineScope(Dispatchers.IO)
+    private val snsModel = SnsModel()
 
     init {
         load(false)
@@ -26,10 +27,16 @@ class SnsViewModel(
     fun loadMore() {
         isLoading.postValue(true)
         scope.launch {
-            SnsModel.fetchTimelineMore()?.let {
+            snsModel.fetchTimelineMore()?.let {
                 timeline.postValue(it)
             }
             isLoading.postValue(false)
+        }
+    }
+
+    fun sendSnsPost(content: String) {
+        scope.launch {
+            snsModel.sendSnsPost(content)
         }
     }
 
@@ -37,7 +44,7 @@ class SnsViewModel(
         val isDoing = if (forRefresh) isRefreshing else isLoading
         isDoing.postValue(true)
         scope.launch {
-            SnsModel.fetchTimeline(forRefresh)?.let {
+            snsModel.fetchTimeline(forRefresh)?.let {
                 timeline.postValue(it)
             }
             isDoing.postValue(false)
