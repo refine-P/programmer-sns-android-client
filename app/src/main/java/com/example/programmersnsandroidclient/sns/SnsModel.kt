@@ -5,16 +5,17 @@ import kotlinx.coroutines.runBlocking
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-const val INITIAL_TIMELINE_NUM_LIMIT = 50
-const val INCREMENTAL_TIMELINE_NUM_LIMIT = 30
-
-class SnsModel {
-    private val service = Retrofit.Builder().apply {
-        baseUrl("https://versatileapi.herokuapp.com/api/")
-        addConverterFactory(GsonConverterFactory.create())
-    }.build().create(VersatileApi::class.java)
-
-    private var timelineNumLimit = INITIAL_TIMELINE_NUM_LIMIT
+class SnsModel(
+    private val service : VersatileApi = Retrofit.Builder()
+        .baseUrl("https://versatileapi.herokuapp.com/api/")
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+        .create(VersatileApi::class.java),
+    initialTimelineNumLimit : Int = 50,
+    private val incrementalTimelineNumLimit : Int = 30,
+) {
+    // TODO: timelineNumLimitをSnsModelが持つ必要ある？
+    private var timelineNumLimit = initialTimelineNumLimit
     private val userCache by lazy { loadUserCache() }
 
     suspend fun fetchTimeline(refreshUserCache: Boolean): List<SnsContent>? {
@@ -27,11 +28,11 @@ class SnsModel {
     }
 
     suspend fun fetchTimelineMore(): List<SnsContent>? {
-        timelineNumLimit += INCREMENTAL_TIMELINE_NUM_LIMIT
+        timelineNumLimit += incrementalTimelineNumLimit
         val timeline = fetchTimeline(false)
 
         if (timeline == null) {
-            timelineNumLimit -= INCREMENTAL_TIMELINE_NUM_LIMIT
+            timelineNumLimit -= incrementalTimelineNumLimit
         }
         return timeline
     }
