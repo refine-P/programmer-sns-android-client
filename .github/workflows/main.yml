@@ -39,6 +39,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+        
       # 依存関係の出力
       - name: Displays the Android dependencies of the project
         run: ./gradlew androidDependencies
