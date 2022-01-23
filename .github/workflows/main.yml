@@ -1,4 +1,4 @@
-# This is a basic workflow to help you get started with Actions
+# https://qiita.com/uhooi/items/70ffe67ba65d33189db2 を参考に作成。
 
 name: programmer-sns-android-client
 
@@ -77,3 +77,9 @@ jobs:
         
       - name: Test with Gradle
         run: ./gradlew test --stacktrace
+        
+      - name: Upload test results
+        uses: actions/upload-artifact@v2
+        with:
+          name: test-results
+          path: build/reports/tests
