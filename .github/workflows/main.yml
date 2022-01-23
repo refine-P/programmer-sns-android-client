@@ -76,9 +76,10 @@ jobs:
         run: chmod +x ./gradlew
         
       - name: Test with Gradle
-        run: ./gradlew test --stacktrace
+        run: ./gradlew test
         
       - name: Upload test results
+        if: always()
         uses: actions/upload-artifact@v2
         with:
           name: test-results
