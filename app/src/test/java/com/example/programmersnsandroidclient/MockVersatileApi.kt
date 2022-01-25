@@ -35,7 +35,7 @@ class MockVersatileApi(
         if (!res.isSuccessful) return res
 
         val userId = currentUserId ?: return res
-        val targetUser = SnsUser(userId, userSetting.description, userSetting.name)
+        val targetUser = SnsUser(userId, userSetting.name, userSetting.description)
         allUsers = allUsers?.filterNot { it == targetUser }?.plus(targetUser)
         return res
     }

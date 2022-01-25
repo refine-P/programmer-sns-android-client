@@ -26,7 +26,7 @@ class SnsModelTest {
         SnsContentInternal("dummy_content_id", "dummy_text", "", "", "dummy_user_id", "", ""),
     )
     private val dummyUsers = listOf(
-        SnsUser("dummy_user_id", "dummy_description", "dummy_name"),
+        SnsUser("dummy_user_id",  "dummy_name", "dummy_description"),
     )
     private val dummyCurrentUserId = dummyUsers[0].id
 
@@ -90,7 +90,7 @@ class SnsModelTest {
             SnsContentInternal("dummy_content_id2", "dummy_text2", "", "", "dummy_user_id2", "", "")
         )
         service.allUsers = dummyUsers.plus(
-            SnsUser("dummy_user_id2", "dummy_description2", "dummy_name2"),
+            SnsUser("dummy_user_id2",  "dummy_name2", "dummy_description2"),
         )
 
         // UserCacheをrefreshしない場合
@@ -118,7 +118,7 @@ class SnsModelTest {
         val actual = runBlocking {
             model.fetchUser("dummy_user_id")
         }
-        val expected = SnsUser("dummy_user_id", "dummy_description", "dummy_name")
+        val expected = SnsUser("dummy_user_id",  "dummy_name", "dummy_description")
         assertEquals(expected, actual)
     }
 
@@ -166,7 +166,7 @@ class SnsModelTest {
         assertEquals(dummyCurrentUserId, actualUserId)
 
         val expectUsers = dummyUsers.plus(
-            SnsUser(dummyCurrentUserId, "dummy_description2", "dummy_name2")
+            SnsUser(dummyCurrentUserId, "dummy_name2", "dummy_description2")
         )
         assertEquals(expectUsers, service.allUsers)
     }

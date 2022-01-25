@@ -40,8 +40,8 @@ class SnsViewModelTest {
         SnsContentInternal("dummy_content_id2", "dummy_text2", "", "", "dummy_user_id2", "", "")
     )
     private val dummyUsers = listOf(
-        SnsUser("dummy_user_id", "dummy_description", "dummy_name"),
-        SnsUser("dummy_user_id2", "dummy_description2", "dummy_name2"),
+        SnsUser("dummy_user_id", "dummy_name", "dummy_description"),
+        SnsUser("dummy_user_id2", "dummy_name2", "dummy_description2"),
     )
     private val dummyCurrentUserId = dummyUsers[0].id
 
@@ -309,7 +309,7 @@ class SnsViewModelTest {
         val name = "dummy_name%s".format(dummyUsers.size + 1)
         val description = "dummy_text%s".format(dummyUsers.size + 1)
         viewmodel.updateUserSetting(name, description)
-        val expected = SnsUser(dummyCurrentUserId, description, name)
+        val expected = SnsUser(dummyCurrentUserId, name, description)
         assertNull(viewmodel.currentUser.value)
         assertEquals(false, service.allUsers?.contains(expected))
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
@@ -330,7 +330,7 @@ class SnsViewModelTest {
         val name = "dummy_name%s".format(dummyUsers.size + 1)
         val description = "dummy_text%s".format(dummyUsers.size + 1)
         viewmodel.updateUserSetting(name, description)
-        val expected = SnsUser(dummyCurrentUserId, description, name)
+        val expected = SnsUser(dummyCurrentUserId, name, description)
         assertNull(viewmodel.currentUser.value)
         assertEquals(false, service.allUsers?.contains(expected))
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
