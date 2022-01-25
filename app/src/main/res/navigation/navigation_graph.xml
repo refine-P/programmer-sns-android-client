@@ -11,9 +11,18 @@
         android:label="fragment_timeline"
         tools:layout="@layout/fragment_timeline" >
         <action
+            android:id="@+id/action_user_setting"
+            app:destination="@id/user_setting" />
+        <action
             android:id="@+id/action_send"
             app:destination="@id/send_sns_post" />
     </fragment>
+
+    <fragment
+        android:id="@+id/user_setting"
+        android:name="com.example.programmersnsandroidclient.UserSettingFragment"
+        android:label="fragment_user_setting"
+        tools:layout="@layout/fragment_user_setting" />
 
     <fragment
         android:id="@+id/send_sns_post"

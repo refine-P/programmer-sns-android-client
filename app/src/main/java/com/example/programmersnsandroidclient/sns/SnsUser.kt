@@ -5,3 +5,12 @@ data class SnsUser(
     val description: String,
     val name: String
 )
+
+data class UserId(
+    val id: String
+)
+
+data class UserSetting(
+    val name: String,
+    val description: String
+)

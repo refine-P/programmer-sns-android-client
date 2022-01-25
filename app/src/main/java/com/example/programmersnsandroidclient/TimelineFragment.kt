@@ -42,6 +42,9 @@ class TimelineFragment : Fragment() {
             }
         })
 
+        binding.userButton.setOnClickListener {
+            findNavController().navigate(R.id.action_user_setting)
+        }
         binding.postButton.setOnClickListener {
             findNavController().navigate(R.id.action_send)
         }

@@ -4,4 +4,8 @@
     <string name="post">Post</string>
     <string name="sns_post_content">つぶやく内容を入力</string>
     <string name="send">送信</string>
+    <string name="sns_user_name">名前</string>
+    <string name="sns_user_description">紹介文</string>
+    <string name="update">更新</string>
+    <string name="user_setting">ユーザー設定</string>
 </resources>

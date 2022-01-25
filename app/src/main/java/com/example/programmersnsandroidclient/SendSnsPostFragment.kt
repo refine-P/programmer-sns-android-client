@@ -17,6 +17,8 @@ class SendSnsPostFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         val binding = FragmentSendSnsPostBinding.inflate(inflater, container, false)
+        binding.lifecycleOwner = viewLifecycleOwner
+
         binding.sendButton.setOnClickListener {
             snsViewModel.sendSnsPost(binding.snsPostContent.text.toString())
             findNavController().popBackStack()

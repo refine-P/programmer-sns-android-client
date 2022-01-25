@@ -16,4 +16,7 @@ interface VersatileApi {
     @Headers("Authorization: HelloWorld")
     @POST("text")
     suspend fun sendSnsPost(@Body post: SnsPost): Response<Void>
+
+    @PUT("user/create_user")
+    suspend fun updateUser(@Body userSetting: UserSetting): Response<UserId>
 }

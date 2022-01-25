@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.programmersnsandroidclient.sns.SnsContent
 import com.example.programmersnsandroidclient.sns.SnsModel
+import com.example.programmersnsandroidclient.sns.SnsUser
 import kotlinx.coroutines.*
 
 class SnsViewModel(
@@ -25,6 +26,9 @@ class SnsViewModel(
     private val _isRefreshing: MutableLiveData<Boolean> = MutableLiveData(false)
     val isRefreshing : LiveData<Boolean> = _isRefreshing
 
+    private val _currentUser: MutableLiveData<SnsUser> = MutableLiveData()
+    val currentUser : LiveData<SnsUser> = _currentUser
+
     init {
         load(false, shouldLoadMore = false)
     }
@@ -37,9 +41,25 @@ class SnsViewModel(
         load(false, shouldLoadMore = true)
     }
 
+    fun updateCurrentUser(userId: String) {
+        viewModelScope.launch(dispatcher) {
+            snsModel.fetchUser(userId)?.let {
+                _currentUser.postValue(it)
+            }
+        }
+    }
+
     fun sendSnsPost(content: String) {
         viewModelScope.launch(dispatcher) {
             snsModel.sendSnsPost(content)
+        }
+    }
+
+    fun updateUserSetting(name: String, description: String) {
+        viewModelScope.launch(dispatcher) {
+            snsModel.updateUserSetting(name, description)?.let {
+                updateCurrentUser(it)
+            }
         }
     }
 

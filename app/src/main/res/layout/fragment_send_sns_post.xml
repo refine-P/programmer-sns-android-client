@@ -3,7 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <LinearLayout
-        android:id="@+id/linearLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="end"
@@ -11,7 +10,7 @@
         tools:context=".SendSnsPostFragment">
 
         <EditText
-            android:id="@+id/snsPostContent"
+            android:id="@+id/sns_post_content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ems="10"

@@ -22,8 +22,16 @@ class SnsModel(
         }
     }
 
+    suspend fun fetchUser(userId: String) : SnsUser? {
+        return service.fetchUser(userId).body()
+    }
+
     suspend fun sendSnsPost(content: String) {
         service.sendSnsPost(SnsPost(content, null, null))
+    }
+
+    suspend fun updateUserSetting(name: String, description: String) : String? {
+        return service.updateUser(UserSetting(name, description)).body()?.id
     }
 
     private fun loadUserCache(): HashMap<String, SnsUser> {
