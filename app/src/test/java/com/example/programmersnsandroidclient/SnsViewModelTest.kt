@@ -2,8 +2,8 @@ package com.example.programmersnsandroidclient
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.example.programmersnsandroidclient.sns.*
-import junit.framework.Assert.assertNull
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Rule
 import org.junit.Test
 import retrofit2.Retrofit
