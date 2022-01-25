@@ -58,7 +58,7 @@ class SnsViewModel(
     fun updateUserSetting(name: String, description: String) {
         viewModelScope.launch(dispatcher) {
             snsModel.updateUser(name, description)?.let {
-                updateCurrentUser(it)
+                _currentUser.postValue(SnsUser(it, description, name))
             }
         }
     }

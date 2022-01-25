@@ -2,6 +2,7 @@ package com.example.programmersnsandroidclient
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.example.programmersnsandroidclient.sns.*
+import junit.framework.Assert.assertNull
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -20,7 +21,7 @@ class SnsViewModelTest {
         // LiveDataを更新する際にsleepで待機する時間の長さ（ミリ秒）。
         // LiveDataの更新前にassertが実行されてしまうのを防ぐためにsleepで対処する。
         // TODO: sleepを使うのはあまり良い方法ではなさそうなので、より賢い方法を探す。
-        private const val DELAY_FOR_LIVEDATA_MILLIS : Long = 300
+        private const val DELAY_FOR_LIVEDATA_MILLIS: Long = 300
     }
 
     private val retrofit = Retrofit.Builder()
@@ -33,7 +34,7 @@ class SnsViewModelTest {
     private val service = MockVersatileApi(delegate)
     private val model = SnsModel(service)
 
-    private lateinit var viewmodel : SnsViewModel
+    private lateinit var viewmodel: SnsViewModel
     private val dummyTimeline = listOf(
         SnsContentInternal("dummy_content_id", "dummy_text", "", "", "dummy_user_id", "", ""),
         SnsContentInternal("dummy_content_id2", "dummy_text2", "", "", "dummy_user_id2", "", "")
@@ -42,17 +43,25 @@ class SnsViewModelTest {
         SnsUser("dummy_user_id", "dummy_description", "dummy_name"),
         SnsUser("dummy_user_id2", "dummy_description2", "dummy_name2"),
     )
+    private val dummyCurrentUserId = dummyUsers[0].id
 
     private fun setUpService(isSuccess: Boolean, userNum: Int = dummyUsers.size) {
         behavior.apply {
             setDelay(0, TimeUnit.MILLISECONDS) // 即座に結果が返ってくるようにする
             setVariancePercent(0)
             setFailurePercent(0)
-            setErrorPercent(if (isSuccess) { 0 } else { 100 })
+            setErrorPercent(
+                if (isSuccess) {
+                    0
+                } else {
+                    100
+                }
+            )
         }
 
         service.allTimeline = dummyTimeline
         service.allUsers = dummyUsers.take(userNum)
+        service.currentUserId = dummyCurrentUserId
     }
 
     @Test
@@ -182,11 +191,12 @@ class SnsViewModelTest {
 
     @Test
     fun loadmore_failure() {
+        // viewmodel の初期化は成功させる
         setUpService(true)
-
         viewmodel = SnsViewModel(model, 1, 1)
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
+        // それ以降は失敗
         setUpService(false)
         viewmodel.loadMore()
         val expectedBeforeLoadMore = listOf(
@@ -200,5 +210,132 @@ class SnsViewModelTest {
         assertEquals(expectedBeforeLoadMore, viewmodel.timeline.value)
         assertEquals(false, viewmodel.isLoading.value)
         assertEquals(false, viewmodel.isRefreshing.value)
+    }
+
+    @Test
+    fun updateCurrentUser_success() {
+        setUpService(true)
+
+        viewmodel = SnsViewModel(model, 1, 1)
+        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
+
+        viewmodel.updateCurrentUser(dummyCurrentUserId)
+        assertNull(viewmodel.currentUser.value)
+        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
+
+        assertEquals(dummyUsers.find { it.id == dummyCurrentUserId }, viewmodel.currentUser.value)
+    }
+
+    @Test
+    fun updateCurrentUser_failure() {
+        // viewmodel の初期化は成功させる
+        setUpService(true)
+        viewmodel = SnsViewModel(model, 1, 1)
+        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
+
+        // それ以降は失敗
+        setUpService(false)
+        viewmodel.updateCurrentUser(dummyCurrentUserId)
+        assertNull(viewmodel.currentUser.value)
+        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
+
+        assertNull(viewmodel.currentUser.value)
+    }
+
+    @Test
+    fun sendSnsPost_success() {
+        setUpService(true)
+
+        viewmodel = SnsViewModel(model, 1, 1)
+        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
+
+        val content = "dummy_text%s".format(dummyTimeline.size + 1)
+        viewmodel.sendSnsPost(content)
+        val expectedClientTimeline = listOf(
+            SnsContent("dummy_content_id", "dummy_name", "dummy_text"),
+        )
+        assertEquals(expectedClientTimeline, viewmodel.timeline.value)
+        assertEquals(dummyTimeline, service.allTimeline)
+        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
+
+        val expectedServerTimeline = dummyTimeline.plus(
+            SnsContentInternal(
+                "dummy_content_id%s".format(dummyTimeline.size + 1),
+                content,
+                "",
+                "",
+                dummyCurrentUserId,
+                "",
+                ""
+            )
+        )
+        // クライアント側は timeline を load してないのでそのまま
+        assertEquals(expectedClientTimeline, viewmodel.timeline.value)
+
+        // サーバー側には投稿が追加される
+        assertEquals(expectedServerTimeline, service.allTimeline)
+    }
+
+    @Test
+    fun sendSnsPost_failure() {
+        // viewmodel の初期化は成功させる
+        setUpService(true)
+        viewmodel = SnsViewModel(model, 1, 1)
+        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
+
+        // それ以降は失敗
+        setUpService(false)
+        val content = "dummy_text%s".format(dummyTimeline.size + 1)
+        viewmodel.sendSnsPost(content)
+        val expectedClientTimeline = listOf(
+            SnsContent("dummy_content_id", "dummy_name", "dummy_text"),
+        )
+        assertEquals(expectedClientTimeline, viewmodel.timeline.value)
+        assertEquals(dummyTimeline, service.allTimeline)
+        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
+
+        // 投稿に失敗するので、クライアントとサーバーの両方とも変化なし
+        assertEquals(expectedClientTimeline, viewmodel.timeline.value)
+        assertEquals(dummyTimeline, service.allTimeline)
+    }
+
+    @Test
+    fun updateUserSetting_success() {
+        setUpService(true)
+
+        viewmodel = SnsViewModel(model, 1, 1)
+        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
+
+        val name = "dummy_name%s".format(dummyUsers.size + 1)
+        val description = "dummy_text%s".format(dummyUsers.size + 1)
+        viewmodel.updateUserSetting(name, description)
+        val expected = SnsUser(dummyCurrentUserId, description, name)
+        assertNull(viewmodel.currentUser.value)
+        assertEquals(false, service.allUsers?.contains(expected))
+        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
+
+        assertEquals(expected, viewmodel.currentUser.value)
+        assertEquals(true, service.allUsers?.contains(expected))
+    }
+
+    @Test
+    fun updateUserSetting_failure() {
+        // viewmodel の初期化は成功させる
+        setUpService(true)
+        viewmodel = SnsViewModel(model, 1, 1)
+        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
+
+        // それ以降は失敗
+        setUpService(false)
+        val name = "dummy_name%s".format(dummyUsers.size + 1)
+        val description = "dummy_text%s".format(dummyUsers.size + 1)
+        viewmodel.updateUserSetting(name, description)
+        val expected = SnsUser(dummyCurrentUserId, description, name)
+        assertNull(viewmodel.currentUser.value)
+        assertEquals(false, service.allUsers?.contains(expected))
+        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
+
+        assertNull(viewmodel.currentUser.value)
+        assertEquals(false, service.allUsers?.contains(expected))
     }
 }

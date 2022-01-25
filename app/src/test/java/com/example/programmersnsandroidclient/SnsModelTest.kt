@@ -89,7 +89,7 @@ class SnsModelTest {
         service.allTimeline = dummyTimeline.plus(
             SnsContentInternal("dummy_content_id2", "dummy_text2", "", "", "dummy_user_id2", "", "")
         )
-        service.allUsers = dummyUsers + listOf(
+        service.allUsers = dummyUsers.plus(
             SnsUser("dummy_user_id2", "dummy_description2", "dummy_name2"),
         )
 
