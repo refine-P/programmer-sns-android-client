@@ -20,7 +20,7 @@ class SnsModelTest {
     private val delegate = MockRetrofit.Builder(retrofit).networkBehavior(behavior).build()
         .create(VersatileApi::class.java)
     private val service = MockVersatileApi(delegate)
-    private val model = SnsModel(service)
+    private val model = SnsModel(service, shouldUseFullIdAsUnregisteredUserName = true)
 
     private val dummyTimeline = listOf(
         SnsContentInternal("dummy_content_id", "dummy_text", "", "", "dummy_user_id", "", ""),
@@ -94,11 +94,14 @@ class SnsModelTest {
         )
 
         // UserCacheをrefreshしない場合
-        // UserCacheに新しいUserが存在しないので、新しいUserが投稿したContentは存在しないものとして扱われる。
+        // UserCacheに新しいUserが存在しないので、未登録ユーザーが投稿したContentとして扱われる。
         val actualBeforeRefresh = runBlocking {
             model.fetchTimeline(2, false)
         }
-        assertEquals(expectedBeforeUserAdded, actualBeforeRefresh)
+        val expectedBeforeRefresh = expectedBeforeUserAdded.plus(
+            SnsContent("dummy_content_id2", "dummy_user_id2", "dummy_text2")
+        )
+        assertEquals(expectedBeforeRefresh, actualBeforeRefresh)
 
         // UserCacheをrefreshすることで、新しいUserが投稿したContentが取得される。
         val actual = runBlocking {

@@ -10,6 +10,10 @@ class SnsModel(
         .addConverterFactory(GsonConverterFactory.create())
         .build()
         .create(VersatileApi::class.java),
+    // 未登録ユーザーの名前をユーザーIDそのものにするかどうかのフラグ（テスト用）。
+    // falseの場合、名前をユーザーIDの先頭8桁+" [未登録]"にする。
+    // テスト時にのみtrueにする。
+    private val shouldUseFullIdAsUnregisteredUserName: Boolean = false
 ) {
     private val userCache by lazy { loadUserCache() }
 
@@ -42,8 +46,15 @@ class SnsModel(
     }
 
     private fun loadSnsPost(postInternal: SnsContentInternal): SnsContent? {
-        return userCache[postInternal._user_id]?.let { user ->
-            SnsContent(postInternal.id, user.name, postInternal.text)
+        // TODO: 未登録ユーザーの投稿の表示/非表示を設定で切り替えられると嬉しいかも？
+        val unregisteredUserName = if (shouldUseFullIdAsUnregisteredUserName) {
+            postInternal._user_id
+        } else {
+            postInternal._user_id.take(8) + " [未登録]"
         }
+        val contentFromUnregisteredUser =
+            SnsContent(postInternal.id, unregisteredUserName, postInternal.text)
+        val user = userCache[postInternal._user_id] ?: return contentFromUnregisteredUser
+        return SnsContent(postInternal.id, user.name, postInternal.text)
     }
 }

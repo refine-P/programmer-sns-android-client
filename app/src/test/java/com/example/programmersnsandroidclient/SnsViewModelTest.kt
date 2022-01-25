@@ -32,7 +32,7 @@ class SnsViewModelTest {
     private val delegate = MockRetrofit.Builder(retrofit).networkBehavior(behavior).build()
         .create(VersatileApi::class.java)
     private val service = MockVersatileApi(delegate)
-    private val model = SnsModel(service)
+    private val model = SnsModel(service, shouldUseFullIdAsUnregisteredUserName = true)
 
     private lateinit var viewmodel: SnsViewModel
     private val dummyTimeline = listOf(
@@ -106,7 +106,7 @@ class SnsViewModelTest {
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
         // ユーザーの情報が読み込まれた後で、ユーザーの情報を増やす。
-        // refreshしない限りは1人分の情報しか存在せず、1人分の投稿しか読み込まれない。
+        // refreshしない場合、読み込まれてないユーザーは未登録ユーザーとして扱われる。
         // loadMoreを実行することで、投稿の数の上限を2にする。
         setUpService(true)
         viewmodel.loadMore()
@@ -114,6 +114,7 @@ class SnsViewModelTest {
 
         val expectedBeforeRefresh = listOf(
             SnsContent("dummy_content_id", "dummy_name", "dummy_text"),
+            SnsContent("dummy_content_id2", "dummy_user_id2", "dummy_text2")
         )
         assertEquals(expectedBeforeRefresh, viewmodel.timeline.value)
 
@@ -141,7 +142,7 @@ class SnsViewModelTest {
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
         // ユーザーの情報が読み込まれた後で、ユーザーの情報を増やす。
-        // refreshしない限りは1人分の情報しか存在せず、1人分の投稿しか読み込まれない。
+        // refreshしない場合、読み込まれてないユーザーは未登録ユーザーとして扱われる。
         // loadMoreを実行することで、投稿の数の上限を2にする。
         setUpService(true)
         viewmodel.loadMore()
@@ -149,6 +150,7 @@ class SnsViewModelTest {
 
         val expectedBeforeRefresh = listOf(
             SnsContent("dummy_content_id", "dummy_name", "dummy_text"),
+            SnsContent("dummy_content_id2", "dummy_user_id2", "dummy_text2")
         )
         assertEquals(expectedBeforeRefresh, viewmodel.timeline.value)
 
