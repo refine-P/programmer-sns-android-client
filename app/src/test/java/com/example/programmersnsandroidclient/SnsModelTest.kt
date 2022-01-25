@@ -28,18 +28,30 @@ class SnsModelTest {
     private val dummyUsers = listOf(
         SnsUser("dummy_user_id", "dummy_description", "dummy_name"),
     )
+    private val dummyCurrentUserId = dummyUsers[0].id
 
-    @Test
-    fun fetchTimeline_success() {
+    private fun setUpService(isSuccess: Boolean) {
         behavior.apply {
             setDelay(0, TimeUnit.MILLISECONDS) // 即座に結果が返ってくるようにする
             setVariancePercent(0)
             setFailurePercent(0)
-            setErrorPercent(0)
+            setErrorPercent(
+                if (isSuccess) {
+                    0
+                } else {
+                    100
+                }
+            )
         }
 
         service.allTimeline = dummyTimeline
         service.allUsers = dummyUsers
+        service.currentUserId = dummyCurrentUserId
+    }
+
+    @Test
+    fun fetchTimeline_success() {
+        setUpService(true)
 
         val actual = runBlocking {
             model.fetchTimeline(1, false)
@@ -52,15 +64,7 @@ class SnsModelTest {
 
     @Test
     fun fetchTimeline_failure() {
-        behavior.apply {
-            setDelay(0, TimeUnit.MILLISECONDS) // 即座に結果が返ってくるようにする
-            setVariancePercent(0)
-            setFailurePercent(0)
-            setErrorPercent(100)
-        }
-
-        service.allTimeline = dummyTimeline
-        service.allUsers = dummyUsers
+        setUpService(false)
 
         val actual = runBlocking {
             model.fetchTimeline(1, false)
@@ -70,17 +74,9 @@ class SnsModelTest {
 
     @Test
     fun fetchTimeline_refreshUserCache() {
-        behavior.apply {
-            setDelay(0, TimeUnit.MILLISECONDS) // 即座に結果が返ってくるようにする
-            setVariancePercent(0)
-            setFailurePercent(0)
-            setErrorPercent(0)
-        }
+        setUpService(true)
 
         // fetchTimelineを1度実行することで、UserCacheをloadさせる。
-        service.allTimeline = dummyTimeline
-        service.allUsers = dummyUsers
-
         val actualBeforeUserAdded = runBlocking {
             model.fetchTimeline(1, false)
         }
@@ -90,7 +86,7 @@ class SnsModelTest {
         assertEquals(expectedBeforeUserAdded, actualBeforeUserAdded)
 
         // UserとContentが追加される
-        service.allTimeline = dummyTimeline + listOf(
+        service.allTimeline = dummyTimeline.plus(
             SnsContentInternal("dummy_content_id2", "dummy_text2", "", "", "dummy_user_id2", "", "")
         )
         service.allUsers = dummyUsers + listOf(
@@ -113,5 +109,76 @@ class SnsModelTest {
             SnsContent("dummy_content_id2", "dummy_name2", "dummy_text2")
         )
         assertEquals(expected, actual)
+    }
+
+    @Test
+    fun fetchUser_success() {
+        setUpService(true)
+
+        val actual = runBlocking {
+            model.fetchUser("dummy_user_id")
+        }
+        val expected = SnsUser("dummy_user_id", "dummy_description", "dummy_name")
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun fetchUser_failure() {
+        setUpService(false)
+
+        val actual = runBlocking {
+            model.fetchUser("dummy_user_id")
+        }
+        assertNull(actual)
+    }
+
+    @Test
+    fun sendSnsPost_success() {
+        setUpService(true)
+
+        runBlocking {
+            model.sendSnsPost("dummy_text2")
+        }
+
+        val expected = dummyTimeline.plus(
+            SnsContentInternal("dummy_content_id2", "dummy_text2", "", "", "dummy_user_id", "", "")
+        )
+        assertEquals(expected, service.allTimeline)
+    }
+
+    @Test
+    fun sendSnsPost_failure() {
+        setUpService(false)
+
+        runBlocking {
+            model.sendSnsPost("dummy_text2")
+        }
+        assertEquals(dummyTimeline, service.allTimeline)
+    }
+
+    @Test
+    fun updateUser_success() {
+        setUpService(true)
+
+        val actualUserId = runBlocking {
+            model.updateUser("dummy_name2", "dummy_description2")
+        }
+        assertEquals(dummyCurrentUserId, actualUserId)
+
+        val expectUsers = dummyUsers.plus(
+            SnsUser(dummyCurrentUserId, "dummy_description2", "dummy_name2")
+        )
+        assertEquals(expectUsers, service.allUsers)
+    }
+
+    @Test
+    fun updateUser_failure() {
+        setUpService(false)
+
+        val actualUserId = runBlocking {
+            model.updateUser("dummy_name2", "dummy_description2")
+        }
+        assertNull(actualUserId)
+        assertEquals(dummyUsers, service.allUsers)
     }
 }

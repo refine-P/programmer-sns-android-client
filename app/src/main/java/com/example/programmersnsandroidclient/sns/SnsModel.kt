@@ -30,7 +30,7 @@ class SnsModel(
         service.sendSnsPost(SnsPost(content, null, null))
     }
 
-    suspend fun updateUserSetting(name: String, description: String) : String? {
+    suspend fun updateUser(name: String, description: String) : String? {
         return service.updateUser(UserSetting(name, description)).body()?.id
     }
 
