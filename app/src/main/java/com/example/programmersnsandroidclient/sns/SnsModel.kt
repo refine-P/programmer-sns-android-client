@@ -5,7 +5,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 class SnsModel(
-    private val service : VersatileApi = Retrofit.Builder()
+    private val service: VersatileApi = Retrofit.Builder()
         .baseUrl("https://versatileapi.herokuapp.com/api/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
@@ -22,7 +22,7 @@ class SnsModel(
         }
     }
 
-    suspend fun fetchUser(userId: String) : SnsUser? {
+    suspend fun fetchUser(userId: String): SnsUser? {
         return service.fetchUser(userId).body()
     }
 
@@ -30,7 +30,7 @@ class SnsModel(
         service.sendSnsPost(SnsPost(content, null, null))
     }
 
-    suspend fun updateUser(name: String, description: String) : String? {
+    suspend fun updateUser(name: String, description: String): String? {
         return service.updateUser(UserSetting(name, description)).body()?.id
     }
 

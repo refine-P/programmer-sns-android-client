@@ -8,8 +8,8 @@ import com.example.programmersnsandroidclient.databinding.LoadMoreBinding
 
 class LoadMoreAdapter(
     private val viewLifecycleOwner: LifecycleOwner,
-    private val viewModel: SnsViewModel)
-    : RecyclerView.Adapter<LoadMoreAdapter.ViewHolder>() {
+    private val viewModel: SnsViewModel
+) : RecyclerView.Adapter<LoadMoreAdapter.ViewHolder>() {
     class ViewHolder(private val binding: LoadMoreBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(viewLifecycleOwner: LifecycleOwner, viewModel: SnsViewModel) {
             binding.lifecycleOwner = viewLifecycleOwner

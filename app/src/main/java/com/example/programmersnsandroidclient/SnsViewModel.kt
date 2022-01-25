@@ -7,7 +7,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.programmersnsandroidclient.sns.SnsContent
 import com.example.programmersnsandroidclient.sns.SnsModel
 import com.example.programmersnsandroidclient.sns.SnsUser
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class SnsViewModel(
     private val snsModel: SnsModel = SnsModel(),
@@ -18,16 +20,16 @@ class SnsViewModel(
     private var timelineNumLimit = initialTimelineNumLimit
 
     private val _timeline: MutableLiveData<List<SnsContent>> = MutableLiveData(emptyList())
-    val timeline : LiveData<List<SnsContent>> = _timeline
+    val timeline: LiveData<List<SnsContent>> = _timeline
 
     private val _isLoading: MutableLiveData<Boolean> = MutableLiveData(true)
-    val isLoading : LiveData<Boolean> = _isLoading
+    val isLoading: LiveData<Boolean> = _isLoading
 
     private val _isRefreshing: MutableLiveData<Boolean> = MutableLiveData(false)
-    val isRefreshing : LiveData<Boolean> = _isRefreshing
+    val isRefreshing: LiveData<Boolean> = _isRefreshing
 
     private val _currentUser: MutableLiveData<SnsUser> = MutableLiveData()
-    val currentUser : LiveData<SnsUser> = _currentUser
+    val currentUser: LiveData<SnsUser> = _currentUser
 
     init {
         load(false, shouldLoadMore = false)
