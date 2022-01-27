@@ -16,15 +16,6 @@
         android:orientation="vertical"
         tools:context=".UserSettingFragment">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/user_setting"
-            android:textColor="@color/black"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
-
         <EditText
             android:id="@+id/sns_user_name"
             android:layout_width="match_parent"

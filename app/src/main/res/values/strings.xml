@@ -1,11 +1,14 @@
 <resources>
-    <string name="app_name">Programmer SNS Android Client</string>
+    <string name="app_name">Programmer SNS</string>
     <string name="load_more">Load more…</string>
-    <string name="post">Post</string>
+    <string name="sns_post">投稿する</string>
     <string name="sns_post_content">つぶやく内容を入力</string>
     <string name="send">送信</string>
     <string name="sns_user_name">名前</string>
     <string name="sns_user_description">紹介文</string>
     <string name="update">更新</string>
     <string name="user_setting">ユーザー設定</string>
+    <string name="sns_content">投稿された文章</string>
+    <string name="drawer_open">Drawer Open</string>
+    <string name="drawer_close">Drawer Close</string>
 </resources>

@@ -8,7 +8,7 @@
     <fragment
         android:id="@+id/timeline_fragment"
         android:name="com.example.programmersnsandroidclient.TimelineFragment"
-        android:label="fragment_timeline"
+        android:label="@string/app_name"
         tools:layout="@layout/fragment_timeline">
         <action
             android:id="@+id/action_user_setting"
@@ -21,13 +21,13 @@
     <fragment
         android:id="@+id/user_setting"
         android:name="com.example.programmersnsandroidclient.UserSettingFragment"
-        android:label="fragment_user_setting"
+        android:label="@string/user_setting"
         tools:layout="@layout/fragment_user_setting" />
 
     <fragment
         android:id="@+id/send_sns_post"
         android:name="com.example.programmersnsandroidclient.SendSnsPostFragment"
-        android:label="fragment_send_sns_post"
+        android:label="@string/sns_post"
         tools:layout="@layout/fragment_send_sns_post" />
 
 </navigation>
