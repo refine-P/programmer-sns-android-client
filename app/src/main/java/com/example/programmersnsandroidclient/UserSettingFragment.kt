@@ -30,9 +30,6 @@ class UserSettingFragment : Fragment() {
         }
 
         val prefs = activity?.getPreferences(Context.MODE_PRIVATE) ?: return binding.root
-        prefs.getString("user_id", null)?.let {
-            snsViewModel.updateCurrentUser(it)
-        }
         snsViewModel.currentUser.observe(viewLifecycleOwner, {
             with(prefs.edit()) {
                 putString("user_id", it.id)

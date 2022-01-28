@@ -9,6 +9,8 @@
     <string name="update">更新</string>
     <string name="user_setting">ユーザー設定</string>
     <string name="sns_content">投稿された文章</string>
-    <string name="drawer_open">Drawer Open</string>
-    <string name="drawer_close">Drawer Close</string>
+    <string name="profile">プロフィール</string>
+    <string name="user_contents">投稿一覧</string>
+    <string name="unregistered_user_name">[未登録ユーザー]</string>
+    <string name="unregistered_user_id">unknown</string>
 </resources>
