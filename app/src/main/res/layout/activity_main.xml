@@ -41,7 +41,9 @@
             android:layout_gravity="start"
             android:fitsSystemWindows="true"
             app:menu="@menu/drawer_menu"
-            app:itemTextColor="?android:textColorPrimary" />
+            app:itemTextColor="?android:textColorPrimary"
+            app:itemIconTint="?attr/colorPrimary"
+            app:itemTextAppearance="@style/TextAppearance.AppCompat.Menu"/>
     </androidx.drawerlayout.widget.DrawerLayout>
 
 </layout>

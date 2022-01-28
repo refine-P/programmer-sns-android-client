@@ -8,16 +8,16 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import com.example.programmersnsandroidclient.databinding.FragmentUserSettingBinding
+import com.example.programmersnsandroidclient.databinding.FragmentEditUserProfileBinding
 
-class UserSettingFragment : Fragment() {
+class EditUserProfileFragment : Fragment() {
     private val snsViewModel: SnsViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = FragmentUserSettingBinding.inflate(inflater, container, false)
+        val binding = FragmentEditUserProfileBinding.inflate(inflater, container, false)
         binding.viewModel = snsViewModel
         binding.lifecycleOwner = viewLifecycleOwner
 

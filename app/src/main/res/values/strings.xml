@@ -4,13 +4,18 @@
     <string name="sns_post">投稿する</string>
     <string name="sns_post_content">つぶやく内容を入力</string>
     <string name="send">送信</string>
+    <string name="sns_user_id">user id</string>
     <string name="sns_user_name">名前</string>
-    <string name="sns_user_description">紹介文</string>
+    <string name="sns_user_description">自己紹介</string>
     <string name="update">更新</string>
-    <string name="user_setting">ユーザー設定</string>
+    <string name="edit_profile">プロフィールを編集する</string>
     <string name="sns_content">投稿された文章</string>
     <string name="profile">プロフィール</string>
     <string name="user_contents">投稿一覧</string>
+    <string name="edit">編集</string>
     <string name="unregistered_user_name">[未登録ユーザー]</string>
     <string name="unregistered_user_id">unknown</string>
+    <string name="instruction_for_unregistered_user">ユーザー登録をしたい場合はプロフィールを編集してね！</string>
+    <string name="enter_name">名前を入力</string>
+    <string name="enter_description">自己紹介を入力</string>
 </resources>

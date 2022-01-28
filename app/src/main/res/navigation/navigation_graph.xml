@@ -10,18 +10,25 @@
         android:label="@string/app_name"
         tools:layout="@layout/fragment_timeline">
         <action
-            android:id="@+id/action_user_setting"
-            app:destination="@id/user_setting" />
-        <action
             android:id="@+id/action_send"
             app:destination="@id/send_sns_post" />
     </fragment>
 
     <fragment
-        android:id="@+id/user_setting"
-        android:name="com.example.programmersnsandroidclient.UserSettingFragment"
-        android:label="@string/user_setting"
-        tools:layout="@layout/fragment_user_setting" />
+        android:id="@+id/user_profile"
+        android:name="com.example.programmersnsandroidclient.UserProfileFragment"
+        android:label="@string/profile"
+        tools:layout="@layout/fragment_edit_user_profile">
+        <action
+            android:id="@+id/action_edit_user_profile"
+            app:destination="@id/edit_user_profile" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/edit_user_profile"
+        android:name="com.example.programmersnsandroidclient.EditUserProfileFragment"
+        android:label="@string/edit_profile"
+        tools:layout="@layout/fragment_edit_user_profile" />
 
     <fragment
         android:id="@+id/send_sns_post"
