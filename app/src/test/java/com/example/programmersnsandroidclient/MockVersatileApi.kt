@@ -5,11 +5,11 @@ import retrofit2.Response
 import retrofit2.mock.BehaviorDelegate
 
 class MockVersatileApi(
-    private val delegate : BehaviorDelegate<VersatileApi>
+    private val delegate: BehaviorDelegate<VersatileApi>
 ) : VersatileApi {
-    var allTimeline : List<SnsContentInternal>? = null
-    var allUsers : List<SnsUser>? = null
-    var currentUserId : String? = null
+    var allTimeline: List<SnsContentInternal>? = null
+    var allUsers: List<SnsUser>? = null
+    var currentUserId: String? = null
 
     override suspend fun fetchTimeline(limit: Int): Response<List<SnsContentInternal>> {
         return delegate.returningResponse(allTimeline?.take(limit)).fetchTimeline(limit)
@@ -49,7 +49,16 @@ class MockVersatileApi(
         val inReplyToUserId = post.in_reply_to_user_id ?: ""
         val inReplyToTextId = post.in_reply_to_text_id ?: ""
         allTimeline = allTimeline?.plus(
-            SnsContentInternal(contentId, post.text, inReplyToUserId, inReplyToTextId, userId, "", ""))
+            SnsContentInternal(
+                contentId,
+                post.text,
+                inReplyToUserId,
+                inReplyToTextId,
+                userId,
+                "",
+                ""
+            )
+        )
         return res
     }
 }

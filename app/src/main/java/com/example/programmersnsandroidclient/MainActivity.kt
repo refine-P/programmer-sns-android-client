@@ -20,9 +20,11 @@ class MainActivity : AppCompatActivity() {
         activityMainBinding.lifecycleOwner = this
         setContentView(activityMainBinding.root)
 
-        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         val navController = navHostFragment.navController
-        val appBarConfiguration = AppBarConfiguration(navController.graph, activityMainBinding.drawerLayout)
+        val appBarConfiguration =
+            AppBarConfiguration(navController.graph, activityMainBinding.drawerLayout)
 
         activityMainBinding.toolbar.setupWithNavController(navController, appBarConfiguration)
         activityMainBinding.navView.setupWithNavController(navController)
@@ -33,7 +35,8 @@ class MainActivity : AppCompatActivity() {
             snsViewModel.updateCurrentUser(it)
         }
 
-        val drawerHeaderBinding = DrawerHeaderBinding.inflate(layoutInflater, activityMainBinding.navView, false)
+        val drawerHeaderBinding =
+            DrawerHeaderBinding.inflate(layoutInflater, activityMainBinding.navView, false)
         drawerHeaderBinding.lifecycleOwner = this
         drawerHeaderBinding.viewModel = snsViewModel
 
