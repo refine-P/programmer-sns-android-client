@@ -5,14 +5,14 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.programmersnsandroidclient.sns.SnsContent
-import com.example.programmersnsandroidclient.sns.SnsModel
+import com.example.programmersnsandroidclient.sns.SnsRepository
 import com.example.programmersnsandroidclient.sns.SnsUser
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class SnsViewModel(
-    private val snsModel: SnsModel = SnsModel(),
+    private val snsRepository: SnsRepository = SnsRepository(),
     initialTimelineNumLimit: Int = 50,
     private val incrementalTimelineNumLimit: Int = 30,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
@@ -32,20 +32,20 @@ class SnsViewModel(
     val currentUser: LiveData<SnsUser> = _currentUser
 
     init {
-        load(false, shouldLoadMore = false)
+        loadTimeline(false, shouldLoadMore = false)
     }
 
     fun refresh() {
-        load(true, shouldLoadMore = false)
+        loadTimeline(true, shouldLoadMore = false)
     }
 
     fun loadMore() {
-        load(false, shouldLoadMore = true)
+        loadTimeline(false, shouldLoadMore = true)
     }
 
     fun updateCurrentUser(userId: String) {
         viewModelScope.launch(dispatcher) {
-            snsModel.fetchUser(userId)?.let {
+            snsRepository.fetchUser(userId)?.let {
                 _currentUser.postValue(it)
             }
         }
@@ -53,19 +53,19 @@ class SnsViewModel(
 
     fun sendSnsPost(content: String) {
         viewModelScope.launch(dispatcher) {
-            snsModel.sendSnsPost(content)
+            snsRepository.sendSnsPost(content)
         }
     }
 
-    fun updateUserSetting(name: String, description: String) {
+    fun updateUserProfile(name: String, description: String) {
         viewModelScope.launch(dispatcher) {
-            snsModel.updateUser(name, description)?.let {
+            snsRepository.updateUser(name, description)?.let {
                 _currentUser.postValue(SnsUser(it, name, description))
             }
         }
     }
 
-    private fun load(shouldRefresh: Boolean, shouldLoadMore: Boolean) {
+    private fun loadTimeline(shouldRefresh: Boolean, shouldLoadMore: Boolean) {
         val isDoing = if (shouldRefresh) _isRefreshing else _isLoading
         isDoing.postValue(true)
         viewModelScope.launch(dispatcher) {
@@ -74,7 +74,7 @@ class SnsViewModel(
             } else {
                 timelineNumLimit
             }
-            snsModel.fetchTimeline(numLimit, shouldRefresh)?.let {
+            snsRepository.fetchTimeline(numLimit, shouldRefresh)?.let {
                 _timeline.postValue(it)
                 if (shouldLoadMore) timelineNumLimit = numLimit
             }

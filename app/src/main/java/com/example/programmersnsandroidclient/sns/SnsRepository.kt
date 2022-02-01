@@ -4,7 +4,7 @@ import kotlinx.coroutines.runBlocking
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class SnsModel(
+class SnsRepository(
     private val service: VersatileApi = Retrofit.Builder()
         .baseUrl("https://versatileapi.herokuapp.com/api/")
         .addConverterFactory(GsonConverterFactory.create())
@@ -21,7 +21,7 @@ class SnsModel(
         if (refreshUserCache) userCache.putAll(loadUserCache())
 
         val timelineInternal = service.fetchTimeline(timelineNumLimit).body() ?: return null
-        return timelineInternal.mapNotNull {
+        return timelineInternal.map {
             loadSnsPost(it)
         }
     }
@@ -45,7 +45,7 @@ class SnsModel(
         return allUsers?.associateTo(hashMapOf()) { it.id to it } ?: hashMapOf()
     }
 
-    private fun loadSnsPost(postInternal: SnsContentInternal): SnsContent? {
+    private fun loadSnsPost(postInternal: SnsContentInternal): SnsContent {
         // TODO: 未登録ユーザーの投稿の表示/非表示を設定で切り替えられると嬉しいかも？
         val unregisteredUserName = if (shouldUseFullIdAsUnregisteredUserName) {
             postInternal._user_id

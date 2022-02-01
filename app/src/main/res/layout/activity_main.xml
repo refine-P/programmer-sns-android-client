@@ -24,7 +24,7 @@
                 android:theme="@style/Theme.ProgrammerSNSAndroidClient"
                 app:popupTheme="@style/ThemeOverlay.AppCompat.DayNight" />
 
-            <fragment
+            <androidx.fragment.app.FragmentContainerView
                 android:id="@+id/nav_host_fragment"
                 android:layout_height="match_parent"
                 android:layout_width="match_parent"

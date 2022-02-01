@@ -33,14 +33,14 @@ class TimelineFragment : Fragment() {
         )
         recyclerView.adapter = ConcatAdapter(timelineAdapter, loadMoreAdapter)
 
-        snsViewModel.timeline.observe(viewLifecycleOwner, { timeline ->
+        snsViewModel.timeline.observe(viewLifecycleOwner) { timeline ->
             // We need to scroll to the top when we fetch the TL for the first time.
             if (timelineAdapter.itemCount == 0) {  // The first time to fetch the TL.
                 timelineAdapter.submitList(timeline) { recyclerView.scrollToPosition(0) }
             } else {
                 timelineAdapter.submitList(timeline)
             }
-        })
+        }
 
         binding.postButton.setOnClickListener {
             findNavController().navigate(R.id.action_send)

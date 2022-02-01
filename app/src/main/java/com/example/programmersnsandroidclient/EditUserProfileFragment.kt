@@ -22,7 +22,7 @@ class EditUserProfileFragment : Fragment() {
         binding.lifecycleOwner = viewLifecycleOwner
 
         binding.updateButton.setOnClickListener {
-            snsViewModel.updateUserSetting(
+            snsViewModel.updateUserProfile(
                 binding.snsUserName.text.toString(),
                 binding.snsUserDiscription.text.toString()
             )
@@ -30,12 +30,12 @@ class EditUserProfileFragment : Fragment() {
         }
 
         val prefs = activity?.getPreferences(Context.MODE_PRIVATE) ?: return binding.root
-        snsViewModel.currentUser.observe(viewLifecycleOwner, {
+        snsViewModel.currentUser.observe(viewLifecycleOwner) {
             with(prefs.edit()) {
                 putString("user_id", it.id)
                 apply()
             }
-        })
+        }
 
         return binding.root
     }

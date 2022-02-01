@@ -11,7 +11,7 @@ import retrofit2.mock.MockRetrofit
 import retrofit2.mock.NetworkBehavior
 import java.util.concurrent.TimeUnit
 
-class SnsModelTest {
+class SnsRepositoryTest {
     private val retrofit = Retrofit.Builder()
         .baseUrl("https://versatileapi.herokuapp.com/api/")
         .addConverterFactory(GsonConverterFactory.create())
@@ -20,7 +20,7 @@ class SnsModelTest {
     private val delegate = MockRetrofit.Builder(retrofit).networkBehavior(behavior).build()
         .create(VersatileApi::class.java)
     private val service = MockVersatileApi(delegate)
-    private val model = SnsModel(service, shouldUseFullIdAsUnregisteredUserName = true)
+    private val repository = SnsRepository(service, shouldUseFullIdAsUnregisteredUserName = true)
 
     private val dummyTimeline = listOf(
         SnsContentInternal("dummy_content_id", "dummy_text", "", "", "dummy_user_id", "", ""),
@@ -54,7 +54,7 @@ class SnsModelTest {
         setUpService(true)
 
         val actual = runBlocking {
-            model.fetchTimeline(1, false)
+            repository.fetchTimeline(1, false)
         }
         val expected = listOf(
             SnsContent("dummy_content_id", "dummy_name", "dummy_text")
@@ -67,7 +67,7 @@ class SnsModelTest {
         setUpService(false)
 
         val actual = runBlocking {
-            model.fetchTimeline(1, false)
+            repository.fetchTimeline(1, false)
         }
         assertNull(actual)
     }
@@ -78,7 +78,7 @@ class SnsModelTest {
 
         // fetchTimelineを1度実行することで、UserCacheをloadさせる。
         val actualBeforeUserAdded = runBlocking {
-            model.fetchTimeline(1, false)
+            repository.fetchTimeline(1, false)
         }
         val expectedBeforeUserAdded = listOf(
             SnsContent("dummy_content_id", "dummy_name", "dummy_text"),
@@ -96,7 +96,7 @@ class SnsModelTest {
         // UserCacheをrefreshしない場合
         // UserCacheに新しいUserが存在しないので、未登録ユーザーが投稿したContentとして扱われる。
         val actualBeforeRefresh = runBlocking {
-            model.fetchTimeline(2, false)
+            repository.fetchTimeline(2, false)
         }
         val expectedBeforeRefresh = expectedBeforeUserAdded.plus(
             SnsContent("dummy_content_id2", "dummy_user_id2", "dummy_text2")
@@ -105,7 +105,7 @@ class SnsModelTest {
 
         // UserCacheをrefreshすることで、新しいUserが投稿したContentが取得される。
         val actual = runBlocking {
-            model.fetchTimeline(2, true)
+            repository.fetchTimeline(2, true)
         }
         val expected = listOf(
             SnsContent("dummy_content_id", "dummy_name", "dummy_text"),
@@ -119,7 +119,7 @@ class SnsModelTest {
         setUpService(true)
 
         val actual = runBlocking {
-            model.fetchUser("dummy_user_id")
+            repository.fetchUser("dummy_user_id")
         }
         val expected = SnsUser("dummy_user_id", "dummy_name", "dummy_description")
         assertEquals(expected, actual)
@@ -130,7 +130,7 @@ class SnsModelTest {
         setUpService(false)
 
         val actual = runBlocking {
-            model.fetchUser("dummy_user_id")
+            repository.fetchUser("dummy_user_id")
         }
         assertNull(actual)
     }
@@ -140,7 +140,7 @@ class SnsModelTest {
         setUpService(true)
 
         runBlocking {
-            model.sendSnsPost("dummy_text2")
+            repository.sendSnsPost("dummy_text2")
         }
 
         val expected = dummyTimeline.plus(
@@ -154,7 +154,7 @@ class SnsModelTest {
         setUpService(false)
 
         runBlocking {
-            model.sendSnsPost("dummy_text2")
+            repository.sendSnsPost("dummy_text2")
         }
         assertEquals(dummyTimeline, service.allTimeline)
     }
@@ -164,7 +164,7 @@ class SnsModelTest {
         setUpService(true)
 
         val actualUserId = runBlocking {
-            model.updateUser("dummy_name2", "dummy_description2")
+            repository.updateUser("dummy_name2", "dummy_description2")
         }
         assertEquals(dummyCurrentUserId, actualUserId)
 
@@ -179,7 +179,7 @@ class SnsModelTest {
         setUpService(false)
 
         val actualUserId = runBlocking {
-            model.updateUser("dummy_name2", "dummy_description2")
+            repository.updateUser("dummy_name2", "dummy_description2")
         }
         assertNull(actualUserId)
         assertEquals(dummyUsers, service.allUsers)

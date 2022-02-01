@@ -32,7 +32,7 @@ class SnsViewModelTest {
     private val delegate = MockRetrofit.Builder(retrofit).networkBehavior(behavior).build()
         .create(VersatileApi::class.java)
     private val service = MockVersatileApi(delegate)
-    private val model = SnsModel(service, shouldUseFullIdAsUnregisteredUserName = true)
+    private val model = SnsRepository(service, shouldUseFullIdAsUnregisteredUserName = true)
 
     private lateinit var viewmodel: SnsViewModel
     private val dummyTimeline = listOf(
@@ -302,7 +302,7 @@ class SnsViewModelTest {
     }
 
     @Test
-    fun updateUserSetting_success() {
+    fun updateUserProfile_success() {
         setUpService(true)
 
         viewmodel = SnsViewModel(model, 1, 1)
@@ -310,7 +310,7 @@ class SnsViewModelTest {
 
         val name = "dummy_name%s".format(dummyUsers.size + 1)
         val description = "dummy_text%s".format(dummyUsers.size + 1)
-        viewmodel.updateUserSetting(name, description)
+        viewmodel.updateUserProfile(name, description)
         val expected = SnsUser(dummyCurrentUserId, name, description)
         assertNull(viewmodel.currentUser.value)
         assertEquals(false, service.allUsers?.contains(expected))
@@ -321,7 +321,7 @@ class SnsViewModelTest {
     }
 
     @Test
-    fun updateUserSetting_failure() {
+    fun updateUserProfile_failure() {
         // viewmodel の初期化は成功させる
         setUpService(true)
         viewmodel = SnsViewModel(model, 1, 1)
@@ -331,7 +331,7 @@ class SnsViewModelTest {
         setUpService(false)
         val name = "dummy_name%s".format(dummyUsers.size + 1)
         val description = "dummy_text%s".format(dummyUsers.size + 1)
-        viewmodel.updateUserSetting(name, description)
+        viewmodel.updateUserProfile(name, description)
         val expected = SnsUser(dummyCurrentUserId, name, description)
         assertNull(viewmodel.currentUser.value)
         assertEquals(false, service.allUsers?.contains(expected))
