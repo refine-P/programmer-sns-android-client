@@ -1,16 +1,23 @@
 package com.example.programmersnsandroidclient
 
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
 import com.example.programmersnsandroidclient.sns.*
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.mock.MockRetrofit
 import retrofit2.mock.NetworkBehavior
 import java.util.concurrent.TimeUnit
 
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [30])
 class SnsRepositoryTest {
     private val retrofit = Retrofit.Builder()
         .baseUrl("https://versatileapi.herokuapp.com/api/")
@@ -20,7 +27,9 @@ class SnsRepositoryTest {
     private val delegate = MockRetrofit.Builder(retrofit).networkBehavior(behavior).build()
         .create(VersatileApi::class.java)
     private val service = MockVersatileApi(delegate)
-    private val repository = SnsRepository(service, shouldUseFullIdAsUnregisteredUserName = true)
+
+    private val appContext = ApplicationProvider.getApplicationContext<Context>()
+    private val repository = SnsRepository(service, appContext, shouldUseFullIdAsUnregisteredUserName = true)
 
     private val dummyTimeline = listOf(
         SnsContentInternal("dummy_content_id", "dummy_text", "", "", "dummy_user_id", "", ""),
@@ -54,7 +63,7 @@ class SnsRepositoryTest {
         setUpService(true)
 
         val actual = runBlocking {
-            repository.fetchTimeline(1, false)
+            repository.fetchTimeline(1, true)
         }
         val expected = listOf(
             SnsContent("dummy_content_id", "dummy_name", "dummy_text")
@@ -73,12 +82,12 @@ class SnsRepositoryTest {
     }
 
     @Test
-    fun fetchTimeline_refreshUserCache() {
+    fun fetchTimeline_newUserAndContentAdded() {
         setUpService(true)
 
-        // fetchTimelineを1度実行することで、UserCacheをloadさせる。
+        // fetchTimelineを1度実行することで、UserCacheをrefreshする。
         val actualBeforeUserAdded = runBlocking {
-            repository.fetchTimeline(1, false)
+            repository.fetchTimeline(1, true)
         }
         val expectedBeforeUserAdded = listOf(
             SnsContent("dummy_content_id", "dummy_name", "dummy_text"),

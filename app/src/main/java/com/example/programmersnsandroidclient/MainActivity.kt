@@ -29,6 +29,7 @@ class MainActivity : AppCompatActivity() {
         activityMainBinding.toolbar.setupWithNavController(navController, appBarConfiguration)
         activityMainBinding.navView.setupWithNavController(navController)
 
+        // TODO: prefs を SnsRepository に持たせた方が良いかも？
         // メニューでユーザー情報を表示するために、ここでユーザー情報を読み込む。
         val prefs = getPreferences(Context.MODE_PRIVATE)
         prefs.getString("user_id", null)?.let {

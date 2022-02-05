@@ -1,7 +1,11 @@
 package com.example.programmersnsandroidclient.sns
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "users")
 data class SnsUser(
-    val id: String = "",
+    @PrimaryKey val id: String = "",
     val name: String,
     val description: String
 )

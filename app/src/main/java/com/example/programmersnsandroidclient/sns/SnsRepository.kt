@@ -1,6 +1,11 @@
 package com.example.programmersnsandroidclient.sns
 
-import kotlinx.coroutines.runBlocking
+import android.content.Context
+import androidx.room.Room
+import com.example.programmersnsandroidclient.ProgrammerSns
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -10,15 +15,20 @@ class SnsRepository(
         .addConverterFactory(GsonConverterFactory.create())
         .build()
         .create(VersatileApi::class.java),
+    applicationContext: Context = ProgrammerSns.appContext,
     // 未登録ユーザーの名前をユーザーIDそのものにするかどうかのフラグ（テスト用）。
     // falseの場合、名前をユーザーIDの先頭8桁+" [未登録]"にする。
     // テスト時にのみtrueにする。
-    private val shouldUseFullIdAsUnregisteredUserName: Boolean = false
+    private val shouldUseFullIdAsUnregisteredUserName: Boolean = false,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) {
-    private val userCache by lazy { loadUserCache() }
+    private val userDb =
+        Room.databaseBuilder(applicationContext, UserDatabase::class.java, "user-cache").build()
+    // TODO: モックを注入できるようにする
+    private val userDao = userDb.userDao()
 
     suspend fun fetchTimeline(timelineNumLimit: Int, refreshUserCache: Boolean): List<SnsContent>? {
-        if (refreshUserCache) userCache.putAll(loadUserCache())
+        if (refreshUserCache) loadUserCache()
 
         val timelineInternal = service.fetchTimeline(timelineNumLimit).body() ?: return null
         return timelineInternal.map {
@@ -38,14 +48,15 @@ class SnsRepository(
         return service.updateUser(UserSetting(name, description)).body()?.id
     }
 
-    private fun loadUserCache(): HashMap<String, SnsUser> {
-        val allUsers = runBlocking {
-            service.fetchAllUsers().body()
+    private suspend fun loadUserCache() {
+        withContext(dispatcher) {
+            service.fetchAllUsers().body()?.let {
+                userDao.insertUsers(it)
+            }
         }
-        return allUsers?.associateTo(hashMapOf()) { it.id to it } ?: hashMapOf()
     }
 
-    private fun loadSnsPost(postInternal: SnsContentInternal): SnsContent {
+    private suspend fun loadSnsPost(postInternal: SnsContentInternal): SnsContent {
         // TODO: 未登録ユーザーの投稿の表示/非表示を設定で切り替えられると嬉しいかも？
         val unregisteredUserName = if (shouldUseFullIdAsUnregisteredUserName) {
             postInternal._user_id
@@ -54,7 +65,9 @@ class SnsRepository(
         }
         val contentFromUnregisteredUser =
             SnsContent(postInternal.id, unregisteredUserName, postInternal.text)
-        val user = userCache[postInternal._user_id] ?: return contentFromUnregisteredUser
+        val user = withContext(dispatcher) {
+            userDao.getUser(postInternal._user_id)
+        } ?: return contentFromUnregisteredUser
         return SnsContent(postInternal.id, user.name, postInternal.text)
     }
 }

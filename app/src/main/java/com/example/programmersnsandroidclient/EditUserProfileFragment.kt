@@ -29,6 +29,7 @@ class EditUserProfileFragment : Fragment() {
             findNavController().popBackStack()
         }
 
+        // TODO: prefs を SnsRepository に持たせた方が良いかも？
         val prefs = activity?.getPreferences(Context.MODE_PRIVATE) ?: return binding.root
         snsViewModel.currentUser.observe(viewLifecycleOwner) {
             with(prefs.edit()) {

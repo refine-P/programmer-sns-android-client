@@ -1,17 +1,24 @@
 package com.example.programmersnsandroidclient
 
+import android.content.Context
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.test.core.app.ApplicationProvider
 import com.example.programmersnsandroidclient.sns.*
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.mock.MockRetrofit
 import retrofit2.mock.NetworkBehavior
 import java.util.concurrent.TimeUnit
 
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [30])
 class SnsViewModelTest {
     // LiveDataをテストするために必要
     @get:Rule
@@ -32,7 +39,9 @@ class SnsViewModelTest {
     private val delegate = MockRetrofit.Builder(retrofit).networkBehavior(behavior).build()
         .create(VersatileApi::class.java)
     private val service = MockVersatileApi(delegate)
-    private val model = SnsRepository(service, shouldUseFullIdAsUnregisteredUserName = true)
+
+    private val appContext = ApplicationProvider.getApplicationContext<Context>()
+    private val repository = SnsRepository(service, appContext, shouldUseFullIdAsUnregisteredUserName = true)
 
     private lateinit var viewmodel: SnsViewModel
     private val dummyTimeline = listOf(
@@ -68,7 +77,7 @@ class SnsViewModelTest {
     fun init_success() {
         setUpService(true)
 
-        viewmodel = SnsViewModel(model, 1, 1)
+        viewmodel = SnsViewModel(repository, 1, 1)
         assertEquals(emptyList<List<SnsContent>>(), viewmodel.timeline.value)
         assertEquals(true, viewmodel.isLoading.value)
         assertEquals(false, viewmodel.isRefreshing.value)
@@ -86,7 +95,7 @@ class SnsViewModelTest {
     fun init_failure() {
         setUpService(false)
 
-        viewmodel = SnsViewModel(model, 1, 1)
+        viewmodel = SnsViewModel(repository, 1, 1)
         assertEquals(emptyList<List<SnsContent>>(), viewmodel.timeline.value)
         assertEquals(true, viewmodel.isLoading.value)
         assertEquals(false, viewmodel.isRefreshing.value)
@@ -102,7 +111,7 @@ class SnsViewModelTest {
         // 開始時点ではユーザーの情報は1人分しか読み込まれないようにする。
         // viewmodelを初期化した時点でユーザーの情報が読み込まれる。
         setUpService(true, 1)
-        viewmodel = SnsViewModel(model, 1, 1)
+        viewmodel = SnsViewModel(repository, 1, 1)
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
         // ユーザーの情報が読み込まれた後で、ユーザーの情報を増やす。
@@ -138,7 +147,7 @@ class SnsViewModelTest {
         // 開始時点ではユーザーの情報は1人分しか読み込まれないようにする。
         // viewmodelを初期化した時点でユーザーの情報が読み込まれる。
         setUpService(true, 1)
-        viewmodel = SnsViewModel(model, 1, 1)
+        viewmodel = SnsViewModel(repository, 1, 1)
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
         // ユーザーの情報が読み込まれた後で、ユーザーの情報を増やす。
@@ -170,7 +179,7 @@ class SnsViewModelTest {
     fun loadmore_success() {
         setUpService(true)
 
-        viewmodel = SnsViewModel(model, 1, 1)
+        viewmodel = SnsViewModel(repository, 1, 1)
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
         viewmodel.loadMore()
@@ -195,7 +204,7 @@ class SnsViewModelTest {
     fun loadmore_failure() {
         // viewmodel の初期化は成功させる
         setUpService(true)
-        viewmodel = SnsViewModel(model, 1, 1)
+        viewmodel = SnsViewModel(repository, 1, 1)
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
         // それ以降は失敗
@@ -218,7 +227,7 @@ class SnsViewModelTest {
     fun updateCurrentUser_success() {
         setUpService(true)
 
-        viewmodel = SnsViewModel(model, 1, 1)
+        viewmodel = SnsViewModel(repository, 1, 1)
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
         viewmodel.updateCurrentUser(dummyCurrentUserId)
@@ -232,7 +241,7 @@ class SnsViewModelTest {
     fun updateCurrentUser_failure() {
         // viewmodel の初期化は成功させる
         setUpService(true)
-        viewmodel = SnsViewModel(model, 1, 1)
+        viewmodel = SnsViewModel(repository, 1, 1)
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
         // それ以降は失敗
@@ -248,7 +257,7 @@ class SnsViewModelTest {
     fun sendSnsPost_success() {
         setUpService(true)
 
-        viewmodel = SnsViewModel(model, 1, 1)
+        viewmodel = SnsViewModel(repository, 1, 1)
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
         val content = "dummy_text%s".format(dummyTimeline.size + 1)
@@ -282,7 +291,7 @@ class SnsViewModelTest {
     fun sendSnsPost_failure() {
         // viewmodel の初期化は成功させる
         setUpService(true)
-        viewmodel = SnsViewModel(model, 1, 1)
+        viewmodel = SnsViewModel(repository, 1, 1)
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
         // それ以降は失敗
@@ -305,7 +314,7 @@ class SnsViewModelTest {
     fun updateUserProfile_success() {
         setUpService(true)
 
-        viewmodel = SnsViewModel(model, 1, 1)
+        viewmodel = SnsViewModel(repository, 1, 1)
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
         val name = "dummy_name%s".format(dummyUsers.size + 1)
@@ -324,7 +333,7 @@ class SnsViewModelTest {
     fun updateUserProfile_failure() {
         // viewmodel の初期化は成功させる
         setUpService(true)
-        viewmodel = SnsViewModel(model, 1, 1)
+        viewmodel = SnsViewModel(repository, 1, 1)
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
         // それ以降は失敗
