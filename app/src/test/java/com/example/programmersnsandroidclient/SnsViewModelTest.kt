@@ -42,7 +42,8 @@ class SnsViewModelTest {
 
     private val appContext = ApplicationProvider.getApplicationContext<Context>()
     private val userDao = MockUserDao()
-    private val repository = SnsRepository(service, appContext, userDao, shouldUseFullIdAsUnregisteredUserName = true)
+    private val repository =
+        SnsRepository(service, appContext, userDao, shouldUseFullIdAsUnregisteredUserName = true)
 
     private lateinit var viewmodel: SnsViewModel
     private val dummyTimeline = listOf(

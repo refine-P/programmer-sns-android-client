@@ -17,7 +17,8 @@ class SnsRepository(
         .create(VersatileApi::class.java),
     private val appContext: Context = ProgrammerSns.appContext,
     private val userDao: UserDao = Room.databaseBuilder(
-        appContext, UserDatabase::class.java, "user-cache").build().userDao(),
+        appContext, UserDatabase::class.java, "user-cache"
+    ).build().userDao(),
     // 未登録ユーザーの名前をユーザーIDそのものにするかどうかのフラグ（テスト用）。
     // falseの場合、名前をユーザーIDの先頭8桁+" [未登録]"にする。
     // テスト時にのみtrueにする。
@@ -26,8 +27,8 @@ class SnsRepository(
 ) {
     private val prefs = appContext.getSharedPreferences("user_info", Context.MODE_PRIVATE)
 
-    suspend fun fetchTimeline(timelineNumLimit: Int, refreshUserCache: Boolean): List<SnsContent>? {
-        if (refreshUserCache) loadUserCache()
+    suspend fun fetchTimeline(timelineNumLimit: Int, shouldRefreshUserCache: Boolean): List<SnsContent>? {
+        if (shouldRefreshUserCache) refreshUserCache()
 
         val timelineInternal = service.fetchTimeline(timelineNumLimit).body() ?: return null
         return timelineInternal.map {
@@ -55,7 +56,7 @@ class SnsRepository(
         prefs.edit().putString("user_id", id).apply()
     }
 
-    private suspend fun loadUserCache() {
+    private suspend fun refreshUserCache() {
         withContext(dispatcher) {
             service.fetchAllUsers().body()?.let {
                 userDao.insertUsers(it)

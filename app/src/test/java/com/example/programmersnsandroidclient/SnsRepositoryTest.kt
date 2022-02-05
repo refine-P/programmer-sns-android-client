@@ -30,7 +30,8 @@ class SnsRepositoryTest {
 
     private val appContext = ApplicationProvider.getApplicationContext<Context>()
     private val userDao = MockUserDao()
-    private val repository = SnsRepository(service, appContext, userDao, shouldUseFullIdAsUnregisteredUserName = true)
+    private val repository =
+        SnsRepository(service, appContext, userDao, shouldUseFullIdAsUnregisteredUserName = true)
 
     private val dummyTimeline = listOf(
         SnsContentInternal("dummy_content_id", "dummy_text", "", "", "dummy_user_id", "", ""),

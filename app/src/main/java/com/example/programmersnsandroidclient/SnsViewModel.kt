@@ -69,7 +69,7 @@ class SnsViewModel(
         isDoing.postValue(true)
 
         val shouldLoadMore = state == TimelineState.LOAD_MORE
-        val refreshUserCache = when (state) {
+        val shouldRefreshUserCache = when (state) {
             TimelineState.INIT, TimelineState.REFRESH -> true
             else -> false
         }
@@ -79,7 +79,7 @@ class SnsViewModel(
             } else {
                 timelineNumLimit
             }
-            snsRepository.fetchTimeline(numLimit, refreshUserCache)?.let {
+            snsRepository.fetchTimeline(numLimit, shouldRefreshUserCache)?.let {
                 _timeline.postValue(it)
                 if (shouldLoadMore) timelineNumLimit = numLimit
             }
