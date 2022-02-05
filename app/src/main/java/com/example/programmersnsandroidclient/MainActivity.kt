@@ -1,6 +1,5 @@
 package com.example.programmersnsandroidclient
 
-import android.content.Context
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -28,13 +27,6 @@ class MainActivity : AppCompatActivity() {
 
         activityMainBinding.toolbar.setupWithNavController(navController, appBarConfiguration)
         activityMainBinding.navView.setupWithNavController(navController)
-
-        // TODO: prefs を SnsRepository に持たせた方が良いかも？
-        // メニューでユーザー情報を表示するために、ここでユーザー情報を読み込む。
-        val prefs = getPreferences(Context.MODE_PRIVATE)
-        prefs.getString("user_id", null)?.let {
-            snsViewModel.updateCurrentUser(it)
-        }
 
         val drawerHeaderBinding =
             DrawerHeaderBinding.inflate(layoutInflater, activityMainBinding.navView, false)

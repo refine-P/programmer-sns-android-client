@@ -32,6 +32,9 @@ class SnsViewModel(
     val currentUser: LiveData<SnsUser> = _currentUser
 
     init {
+        snsRepository.loadCurrentUserId()?.let {
+            updateCurrentUser(it)
+        }
         loadTimeline(TimelineState.INIT)
     }
 
@@ -41,14 +44,6 @@ class SnsViewModel(
 
     fun loadMore() {
         loadTimeline(TimelineState.LOAD_MORE)
-    }
-
-    fun updateCurrentUser(userId: String) {
-        viewModelScope.launch(dispatcher) {
-            snsRepository.fetchUser(userId)?.let {
-                _currentUser.postValue(it)
-            }
-        }
     }
 
     fun sendSnsPost(content: String) {
@@ -61,6 +56,7 @@ class SnsViewModel(
         viewModelScope.launch(dispatcher) {
             snsRepository.updateUser(name, description)?.let {
                 _currentUser.postValue(SnsUser(it, name, description))
+                snsRepository.storeCurrentUserId(it)
             }
         }
     }
@@ -88,6 +84,14 @@ class SnsViewModel(
                 if (shouldLoadMore) timelineNumLimit = numLimit
             }
             isDoing.postValue(false)
+        }
+    }
+
+    private fun updateCurrentUser(userId: String) {
+        viewModelScope.launch(dispatcher) {
+            snsRepository.fetchUser(userId)?.let {
+                _currentUser.postValue(it)
+            }
         }
     }
 }

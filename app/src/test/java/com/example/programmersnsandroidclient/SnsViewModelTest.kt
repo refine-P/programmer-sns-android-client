@@ -1,17 +1,24 @@
 package com.example.programmersnsandroidclient
 
+import android.content.Context
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.test.core.app.ApplicationProvider
 import com.example.programmersnsandroidclient.sns.*
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.mock.MockRetrofit
 import retrofit2.mock.NetworkBehavior
 import java.util.concurrent.TimeUnit
 
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [30])
 class SnsViewModelTest {
     // LiveDataをテストするために必要
     @get:Rule
@@ -33,8 +40,9 @@ class SnsViewModelTest {
         .create(VersatileApi::class.java)
     private val service = MockVersatileApi(delegate)
 
+    private val appContext = ApplicationProvider.getApplicationContext<Context>()
     private val userDao = MockUserDao()
-    private val repository = SnsRepository(service, userDao, shouldUseFullIdAsUnregisteredUserName = true)
+    private val repository = SnsRepository(service, appContext, userDao, shouldUseFullIdAsUnregisteredUserName = true)
 
     private lateinit var viewmodel: SnsViewModel
     private val dummyTimeline = listOf(
@@ -69,6 +77,7 @@ class SnsViewModelTest {
     @Test
     fun init_success() {
         setUpService(true)
+        repository.storeCurrentUserId(dummyUsers[0].id)
 
         viewmodel = SnsViewModel(repository, 1, 1)
         assertEquals(emptyList<List<SnsContent>>(), viewmodel.timeline.value)
@@ -79,6 +88,7 @@ class SnsViewModelTest {
         val expected = listOf(
             SnsContent("dummy_content_id", "dummy_name", "dummy_text")
         )
+        assertEquals(dummyUsers[0], viewmodel.currentUser.value)
         assertEquals(expected, viewmodel.timeline.value)
         assertEquals(false, viewmodel.isLoading.value)
         assertEquals(false, viewmodel.isRefreshing.value)
@@ -87,6 +97,7 @@ class SnsViewModelTest {
     @Test
     fun init_failure() {
         setUpService(false)
+        repository.storeCurrentUserId(dummyUsers[0].id)
 
         viewmodel = SnsViewModel(repository, 1, 1)
         assertEquals(emptyList<List<SnsContent>>(), viewmodel.timeline.value)
@@ -94,6 +105,7 @@ class SnsViewModelTest {
         assertEquals(false, viewmodel.isRefreshing.value)
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
+        assertNull(viewmodel.currentUser.value)
         assertEquals(emptyList<SnsContent>(), viewmodel.timeline.value)
         assertEquals(false, viewmodel.isLoading.value)
         assertEquals(false, viewmodel.isRefreshing.value)
@@ -217,36 +229,6 @@ class SnsViewModelTest {
     }
 
     @Test
-    fun updateCurrentUser_success() {
-        setUpService(true)
-
-        viewmodel = SnsViewModel(repository, 1, 1)
-        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
-
-        viewmodel.updateCurrentUser(dummyCurrentUserId)
-        assertNull(viewmodel.currentUser.value)
-        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
-
-        assertEquals(dummyUsers.find { it.id == dummyCurrentUserId }, viewmodel.currentUser.value)
-    }
-
-    @Test
-    fun updateCurrentUser_failure() {
-        // viewmodel の初期化は成功させる
-        setUpService(true)
-        viewmodel = SnsViewModel(repository, 1, 1)
-        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
-
-        // それ以降は失敗
-        setUpService(false)
-        viewmodel.updateCurrentUser(dummyCurrentUserId)
-        assertNull(viewmodel.currentUser.value)
-        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
-
-        assertNull(viewmodel.currentUser.value)
-    }
-
-    @Test
     fun sendSnsPost_success() {
         setUpService(true)
 
@@ -310,9 +292,12 @@ class SnsViewModelTest {
         viewmodel = SnsViewModel(repository, 1, 1)
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
+        assertNull(repository.loadCurrentUserId())
+
         val name = "dummy_name%s".format(dummyUsers.size + 1)
         val description = "dummy_text%s".format(dummyUsers.size + 1)
         viewmodel.updateUserProfile(name, description)
+
         val expected = SnsUser(dummyCurrentUserId, name, description)
         assertNull(viewmodel.currentUser.value)
         assertEquals(false, service.allUsers?.contains(expected))
@@ -320,6 +305,7 @@ class SnsViewModelTest {
 
         assertEquals(expected, viewmodel.currentUser.value)
         assertEquals(true, service.allUsers?.contains(expected))
+        assertEquals(expected.id, repository.loadCurrentUserId())
     }
 
     @Test
@@ -329,11 +315,14 @@ class SnsViewModelTest {
         viewmodel = SnsViewModel(repository, 1, 1)
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
+        assertNull(repository.loadCurrentUserId())
+
         // それ以降は失敗
         setUpService(false)
         val name = "dummy_name%s".format(dummyUsers.size + 1)
         val description = "dummy_text%s".format(dummyUsers.size + 1)
         viewmodel.updateUserProfile(name, description)
+
         val expected = SnsUser(dummyCurrentUserId, name, description)
         assertNull(viewmodel.currentUser.value)
         assertEquals(false, service.allUsers?.contains(expected))
@@ -341,5 +330,6 @@ class SnsViewModelTest {
 
         assertNull(viewmodel.currentUser.value)
         assertEquals(false, service.allUsers?.contains(expected))
+        assertNull(repository.loadCurrentUserId())
     }
 }
