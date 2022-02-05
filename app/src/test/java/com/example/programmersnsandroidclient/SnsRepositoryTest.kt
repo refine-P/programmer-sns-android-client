@@ -1,23 +1,16 @@
 package com.example.programmersnsandroidclient
 
-import android.content.Context
-import androidx.test.core.app.ApplicationProvider
 import com.example.programmersnsandroidclient.sns.*
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.mock.MockRetrofit
 import retrofit2.mock.NetworkBehavior
 import java.util.concurrent.TimeUnit
 
-@RunWith(RobolectricTestRunner::class)
-@Config(sdk = [30])
 class SnsRepositoryTest {
     private val retrofit = Retrofit.Builder()
         .baseUrl("https://versatileapi.herokuapp.com/api/")
@@ -28,8 +21,8 @@ class SnsRepositoryTest {
         .create(VersatileApi::class.java)
     private val service = MockVersatileApi(delegate)
 
-    private val appContext = ApplicationProvider.getApplicationContext<Context>()
-    private val repository = SnsRepository(service, appContext, shouldUseFullIdAsUnregisteredUserName = true)
+    private val userDao = MockUserDao()
+    private val repository = SnsRepository(service, userDao, shouldUseFullIdAsUnregisteredUserName = true)
 
     private val dummyTimeline = listOf(
         SnsContentInternal("dummy_content_id", "dummy_text", "", "", "dummy_user_id", "", ""),
@@ -76,7 +69,7 @@ class SnsRepositoryTest {
         setUpService(false)
 
         val actual = runBlocking {
-            repository.fetchTimeline(1, false)
+            repository.fetchTimeline(1, true)
         }
         assertNull(actual)
     }

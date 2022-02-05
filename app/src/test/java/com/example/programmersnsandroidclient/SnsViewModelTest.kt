@@ -1,24 +1,17 @@
 package com.example.programmersnsandroidclient
 
-import android.content.Context
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.test.core.app.ApplicationProvider
 import com.example.programmersnsandroidclient.sns.*
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.mock.MockRetrofit
 import retrofit2.mock.NetworkBehavior
 import java.util.concurrent.TimeUnit
 
-@RunWith(RobolectricTestRunner::class)
-@Config(sdk = [30])
 class SnsViewModelTest {
     // LiveDataをテストするために必要
     @get:Rule
@@ -40,8 +33,8 @@ class SnsViewModelTest {
         .create(VersatileApi::class.java)
     private val service = MockVersatileApi(delegate)
 
-    private val appContext = ApplicationProvider.getApplicationContext<Context>()
-    private val repository = SnsRepository(service, appContext, shouldUseFullIdAsUnregisteredUserName = true)
+    private val userDao = MockUserDao()
+    private val repository = SnsRepository(service, userDao, shouldUseFullIdAsUnregisteredUserName = true)
 
     private lateinit var viewmodel: SnsViewModel
     private val dummyTimeline = listOf(

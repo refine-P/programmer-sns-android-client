@@ -1,6 +1,5 @@
 package com.example.programmersnsandroidclient.sns
 
-import android.content.Context
 import androidx.room.Room
 import com.example.programmersnsandroidclient.ProgrammerSns
 import kotlinx.coroutines.CoroutineDispatcher
@@ -15,18 +14,14 @@ class SnsRepository(
         .addConverterFactory(GsonConverterFactory.create())
         .build()
         .create(VersatileApi::class.java),
-    applicationContext: Context = ProgrammerSns.appContext,
+    private val userDao: UserDao = Room.databaseBuilder(
+        ProgrammerSns.appContext, UserDatabase::class.java, "user-cache").build().userDao(),
     // 未登録ユーザーの名前をユーザーIDそのものにするかどうかのフラグ（テスト用）。
     // falseの場合、名前をユーザーIDの先頭8桁+" [未登録]"にする。
     // テスト時にのみtrueにする。
     private val shouldUseFullIdAsUnregisteredUserName: Boolean = false,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) {
-    private val userDb =
-        Room.databaseBuilder(applicationContext, UserDatabase::class.java, "user-cache").build()
-    // TODO: モックを注入できるようにする
-    private val userDao = userDb.userDao()
-
     suspend fun fetchTimeline(timelineNumLimit: Int, refreshUserCache: Boolean): List<SnsContent>? {
         if (refreshUserCache) loadUserCache()
 
