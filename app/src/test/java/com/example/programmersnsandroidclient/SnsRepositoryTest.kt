@@ -4,10 +4,10 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.example.programmersnsandroidclient.sns.*
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
+import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito.*
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import retrofit2.Retrofit
@@ -29,7 +29,7 @@ class SnsRepositoryTest {
     private val service = MockVersatileApi(delegate)
 
     private val appContext = ApplicationProvider.getApplicationContext<Context>()
-    private val userDao = MockUserDao()
+    private val userDao = mock(UserDao::class.java)
     private val repository =
         SnsRepository(service, appContext, userDao, shouldUseFullIdAsUnregisteredUserName = true)
 
@@ -39,7 +39,8 @@ class SnsRepositoryTest {
     private val dummyUsers = listOf(
         SnsUser("dummy_user_id", "dummy_name", "dummy_description"),
     )
-    private val dummyCurrentUserId = dummyUsers[0].id
+    private val dummyCurrentUser = dummyUsers[0]
+    private val dummyCurrentUserId = dummyCurrentUser.id
 
     private fun setUpService(isSuccess: Boolean) {
         behavior.apply {
@@ -64,9 +65,15 @@ class SnsRepositoryTest {
     fun fetchTimeline_success() {
         setUpService(true)
 
+        // refreshされた後のUserCacheを定義
+        `when`(userDao.getUser(dummyCurrentUserId)).thenReturn(dummyCurrentUser)
+
         val actual = runBlocking {
             repository.fetchTimeline(1, true)
         }
+
+        verify(userDao, times(1)).insertUsers(dummyUsers)
+        verify(userDao, times(1)).getUser(dummyCurrentUserId)
         val expected = listOf(
             SnsContent("dummy_content_id", "dummy_name", "dummy_text")
         )
@@ -77,50 +84,80 @@ class SnsRepositoryTest {
     fun fetchTimeline_failure() {
         setUpService(false)
 
+        // refreshされた後のUserCacheを定義
+        `when`(userDao.getUser(dummyCurrentUserId)).thenReturn(dummyCurrentUser)
+
         val actual = runBlocking {
             repository.fetchTimeline(1, true)
         }
+
+        verify(userDao, times(0)).insertUsers(dummyUsers)
+        verify(userDao, times(0)).getUser(dummyCurrentUserId)
         assertNull(actual)
     }
 
     @Test
-    fun fetchTimeline_newUserAndContentAdded() {
+    fun fetchTimeline_newUserAndContentAdded_refresh() {
         setUpService(true)
 
-        // fetchTimelineを1度実行することで、UserCacheをrefreshする。
-        val actualBeforeUserAdded = runBlocking {
-            repository.fetchTimeline(1, true)
-        }
-        val expectedBeforeUserAdded = listOf(
-            SnsContent("dummy_content_id", "dummy_name", "dummy_text"),
-        )
-        assertEquals(expectedBeforeUserAdded, actualBeforeUserAdded)
+        // 事前にUserCacheをrefreshしたものとする。
+        // その際のUserCacheをここに定義。
+        `when`(userDao.getUser(dummyCurrentUserId)).thenReturn(dummyCurrentUser)
 
         // UserとContentが追加される
         service.allTimeline = dummyTimeline.plus(
             SnsContentInternal("dummy_content_id2", "dummy_text2", "", "", "dummy_user_id2", "", "")
         )
-        service.allUsers = dummyUsers.plus(
-            SnsUser("dummy_user_id2", "dummy_name2", "dummy_description2"),
-        )
+        val newUser = SnsUser("dummy_user_id2", "dummy_name2", "dummy_description2")
+        val latestUsers = dummyUsers.plus(newUser)
+        service.allUsers = latestUsers
 
-        // UserCacheをrefreshしない場合
-        // UserCacheに新しいUserが存在しないので、未登録ユーザーが投稿したContentとして扱われる。
-        val actualBeforeRefresh = runBlocking {
-            repository.fetchTimeline(2, false)
-        }
-        val expectedBeforeRefresh = expectedBeforeUserAdded.plus(
-            SnsContent("dummy_content_id2", "dummy_user_id2", "dummy_text2")
-        )
-        assertEquals(expectedBeforeRefresh, actualBeforeRefresh)
+        // refreshされた後のUserCacheの差分を定義
+        `when`(userDao.getUser(newUser.id)).thenReturn(newUser)
 
         // UserCacheをrefreshすることで、新しいUserが投稿したContentが取得される。
         val actual = runBlocking {
             repository.fetchTimeline(2, true)
         }
+
+        verify(userDao, times(1)).insertUsers(latestUsers)
+        verify(userDao, times(1)).getUser(dummyCurrentUserId)
+        verify(userDao, times(1)).getUser(newUser.id)
         val expected = listOf(
             SnsContent("dummy_content_id", "dummy_name", "dummy_text"),
             SnsContent("dummy_content_id2", "dummy_name2", "dummy_text2")
+        )
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun fetchTimeline_newUserAndContentAdded_notRefresh() {
+        setUpService(true)
+
+        // 事前にUserCacheをrefreshしたものとする。
+        // その際のUserCacheをここに定義。
+        `when`(userDao.getUser(dummyCurrentUserId)).thenReturn(dummyCurrentUser)
+
+        // UserとContentが追加される
+        service.allTimeline = dummyTimeline.plus(
+            SnsContentInternal("dummy_content_id2", "dummy_text2", "", "", "dummy_user_id2", "", "")
+        )
+        val newUser = SnsUser("dummy_user_id2", "dummy_name2", "dummy_description2")
+        val latestUsers = dummyUsers.plus(newUser)
+        service.allUsers = latestUsers
+
+        // UserCacheをrefreshしない場合
+        // UserCacheに新しいUserが存在しないので、未登録ユーザーが投稿したContentとして扱われる。
+        val actual = runBlocking {
+            repository.fetchTimeline(2, false)
+        }
+
+        verify(userDao, times(0)).insertUsers(latestUsers)
+        verify(userDao, times(1)).getUser(dummyCurrentUserId)
+        verify(userDao, times(1)).getUser(newUser.id)
+        val expected = listOf(
+            SnsContent("dummy_content_id", "dummy_name", "dummy_text"),
+            SnsContent("dummy_content_id2", "dummy_user_id2", "dummy_text2")
         )
         assertEquals(expected, actual)
     }
@@ -150,9 +187,10 @@ class SnsRepositoryTest {
     fun sendSnsPost_success() {
         setUpService(true)
 
-        runBlocking {
+        val isSuccessful = runBlocking {
             repository.sendSnsPost("dummy_text2")
         }
+        assertTrue(isSuccessful)
 
         val expected = dummyTimeline.plus(
             SnsContentInternal("dummy_content_id2", "dummy_text2", "", "", "dummy_user_id", "", "")
@@ -164,9 +202,10 @@ class SnsRepositoryTest {
     fun sendSnsPost_failure() {
         setUpService(false)
 
-        runBlocking {
+        val isSuccessful = runBlocking {
             repository.sendSnsPost("dummy_text2")
         }
+        assertFalse(isSuccessful)
         assertEquals(dummyTimeline, service.allTimeline)
     }
 

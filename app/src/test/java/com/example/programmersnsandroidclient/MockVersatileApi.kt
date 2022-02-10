@@ -24,6 +24,7 @@ class MockVersatileApi(
         return delegate.returningResponse(allUsers).fetchAllUsers()
     }
 
+    // TODO: allUsers は API の出力を指定するためのみに使われるべきでは？（allUsers を関数内で変更すべきでない？）
     override suspend fun updateUser(userSetting: UserSetting): Response<UserId> {
         val res = delegate.returningResponse(
             if (currentUserId == null) {
@@ -40,6 +41,7 @@ class MockVersatileApi(
         return res
     }
 
+    // TODO: allTimeline は API の出力を指定するためのみに使われるべきでは？（allTimeline を関数内で変更すべきでない？）
     override suspend fun sendSnsPost(post: SnsPost): Response<Void> {
         val res = delegate.returningResponse(null).sendSnsPost(post)
         if (!res.isSuccessful || allTimeline == null) return res

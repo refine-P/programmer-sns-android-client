@@ -9,6 +9,7 @@ import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
+// TODO: 異常系の処理について検討した方が良いかも？
 class SnsRepository(
     private val service: VersatileApi = Retrofit.Builder()
         .baseUrl("https://versatileapi.herokuapp.com/api/")
@@ -40,8 +41,8 @@ class SnsRepository(
         return service.fetchUser(userId).body()
     }
 
-    suspend fun sendSnsPost(content: String) {
-        service.sendSnsPost(SnsPost(content, null, null))
+    suspend fun sendSnsPost(content: String) : Boolean {
+        return service.sendSnsPost(SnsPost(content, null, null)).isSuccessful
     }
 
     suspend fun updateUser(name: String, description: String): String? {
