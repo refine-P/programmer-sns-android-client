@@ -331,9 +331,7 @@ class SnsViewModelTest {
         val description = "dummy_text%s".format(dummyUsers.size + 1)
         viewmodel.updateUserProfile(name, description)
 
-        val expected = SnsUser(dummyCurrentUserId, name, description)
         assertNull(viewmodel.currentUser.value)
-        assertEquals(false, service.allUsers?.contains(expected))
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
         assertNull(viewmodel.currentUser.value)
