@@ -260,25 +260,13 @@ class SnsViewModelTest {
             SnsContent("dummy_content_id", "dummy_name", "dummy_text"),
         )
         assertEquals(expectedClientTimeline, viewmodel.timeline.value)
-        assertEquals(dummyTimeline, service.allTimeline)
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
-        val expectedServerTimeline = dummyTimeline.plus(
-            SnsContentInternal(
-                "dummy_content_id%s".format(dummyTimeline.size + 1),
-                content,
-                "",
-                "",
-                dummyCurrentUserId,
-                "",
-                ""
-            )
-        )
         // クライアント側は timeline を load してないのでそのまま
         assertEquals(expectedClientTimeline, viewmodel.timeline.value)
 
-        // サーバー側には投稿が追加される
-        assertEquals(expectedServerTimeline, service.allTimeline)
+        // サーバーへの投稿は成功
+        assertEquals(true, viewmodel.sendSuccessful.value)
     }
 
     @Test
@@ -297,12 +285,11 @@ class SnsViewModelTest {
             SnsContent("dummy_content_id", "dummy_name", "dummy_text"),
         )
         assertEquals(expectedClientTimeline, viewmodel.timeline.value)
-        assertEquals(dummyTimeline, service.allTimeline)
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
         // 投稿に失敗するので、クライアントとサーバーの両方とも変化なし
         assertEquals(expectedClientTimeline, viewmodel.timeline.value)
-        assertEquals(dummyTimeline, service.allTimeline)
+        assertEquals(false, viewmodel.sendSuccessful.value)
     }
 
     @Test
@@ -321,11 +308,10 @@ class SnsViewModelTest {
 
         val expected = SnsUser(dummyCurrentUserId, name, description)
         assertNull(viewmodel.currentUser.value)
-        assertEquals(false, service.allUsers?.contains(expected))
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
         assertEquals(expected, viewmodel.currentUser.value)
-        assertEquals(true, service.allUsers?.contains(expected))
+        assertEquals(true, viewmodel.updateSuccessful.value)
         assertEquals(expected.id, repository.loadCurrentUserId())
     }
 
@@ -351,7 +337,7 @@ class SnsViewModelTest {
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
         assertNull(viewmodel.currentUser.value)
-        assertEquals(false, service.allUsers?.contains(expected))
+        assertEquals(false, viewmodel.updateSuccessful.value)
         assertNull(repository.loadCurrentUserId())
     }
 }

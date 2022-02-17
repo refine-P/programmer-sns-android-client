@@ -50,17 +50,18 @@ class TimelineFragment : Fragment() {
         }
 
         val savedStateHandle = findNavController().currentBackStackEntry!!.savedStateHandle
-        savedStateHandle.getLiveData<Boolean>(SendSnsPostFragment.SEND_SUCCESSFUL).observe(viewLifecycleOwner) {
-            val message = if (it) {
-                R.string.send_success
-            } else {
-                R.string.send_failure
-            }
-            Snackbar.make(binding.sendSnackbar, message, Snackbar.LENGTH_SHORT).show()
+        savedStateHandle.getLiveData<Boolean>(SendSnsPostFragment.SEND_SUCCESSFUL)
+            .observe(viewLifecycleOwner) {
+                val message = if (it) {
+                    R.string.send_success
+                } else {
+                    R.string.send_failure
+                }
+                Snackbar.make(binding.sendSnackbar, message, Snackbar.LENGTH_SHORT).show()
 
-            // 値を使うのは一回だけにしたいので、使ったら削除する
-            savedStateHandle.remove<Boolean>(SendSnsPostFragment.SEND_SUCCESSFUL)
-        }
+                // 値を使うのは一回だけにしたいので、使ったら削除する
+                savedStateHandle.remove<Boolean>(SendSnsPostFragment.SEND_SUCCESSFUL)
+            }
         return binding.root
     }
 }

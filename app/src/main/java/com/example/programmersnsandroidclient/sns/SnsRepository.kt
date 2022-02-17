@@ -28,7 +28,10 @@ class SnsRepository(
 ) {
     private val prefs = appContext.getSharedPreferences("user_info", Context.MODE_PRIVATE)
 
-    suspend fun fetchTimeline(timelineNumLimit: Int, shouldRefreshUserCache: Boolean): List<SnsContent>? {
+    suspend fun fetchTimeline(
+        timelineNumLimit: Int,
+        shouldRefreshUserCache: Boolean
+    ): List<SnsContent>? {
         if (shouldRefreshUserCache) refreshUserCache()
 
         val timelineInternal = service.fetchTimeline(timelineNumLimit).body() ?: return null
@@ -41,7 +44,7 @@ class SnsRepository(
         return service.fetchUser(userId).body()
     }
 
-    suspend fun sendSnsPost(content: String) : Boolean {
+    suspend fun sendSnsPost(content: String): Boolean {
         return service.sendSnsPost(SnsPost(content, null, null)).isSuccessful
     }
 
