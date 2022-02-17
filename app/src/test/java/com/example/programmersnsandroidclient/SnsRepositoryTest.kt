@@ -190,12 +190,8 @@ class SnsRepositoryTest {
         val isSuccessful = runBlocking {
             repository.sendSnsPost("dummy_text2")
         }
-        assertTrue(isSuccessful)
 
-        val expected = dummyTimeline.plus(
-            SnsContentInternal("dummy_content_id2", "dummy_text2", "", "", "dummy_user_id", "", "")
-        )
-        assertEquals(expected, service.allTimeline)
+        assertTrue(isSuccessful)
     }
 
     @Test
@@ -205,8 +201,8 @@ class SnsRepositoryTest {
         val isSuccessful = runBlocking {
             repository.sendSnsPost("dummy_text2")
         }
+
         assertFalse(isSuccessful)
-        assertEquals(dummyTimeline, service.allTimeline)
     }
 
     @Test
@@ -216,12 +212,8 @@ class SnsRepositoryTest {
         val actualUserId = runBlocking {
             repository.updateUser("dummy_name2", "dummy_description2")
         }
-        assertEquals(dummyCurrentUserId, actualUserId)
 
-        val expectUsers = dummyUsers.plus(
-            SnsUser(dummyCurrentUserId, "dummy_name2", "dummy_description2")
-        )
-        assertEquals(expectUsers, service.allUsers)
+        assertEquals(dummyCurrentUserId, actualUserId)
     }
 
     @Test
@@ -231,8 +223,8 @@ class SnsRepositoryTest {
         val actualUserId = runBlocking {
             repository.updateUser("dummy_name2", "dummy_description2")
         }
+
         assertNull(actualUserId)
-        assertEquals(dummyUsers, service.allUsers)
     }
 
     @Test
