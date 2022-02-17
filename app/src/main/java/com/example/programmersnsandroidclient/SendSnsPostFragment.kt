@@ -10,6 +10,10 @@ import androidx.navigation.fragment.findNavController
 import com.example.programmersnsandroidclient.databinding.FragmentSendSnsPostBinding
 
 class SendSnsPostFragment : Fragment() {
+    companion object {
+        const val SEND_SUCCESSFUL = "SEND_SUCCESSFUL"
+    }
+
     private val snsViewModel: SnsViewModel by activityViewModels()
 
     override fun onCreateView(
@@ -19,10 +23,15 @@ class SendSnsPostFragment : Fragment() {
         val binding = FragmentSendSnsPostBinding.inflate(inflater, container, false)
         binding.lifecycleOwner = viewLifecycleOwner
 
+        val savedStateHandle = findNavController().previousBackStackEntry!!.savedStateHandle
         binding.sendButton.setOnClickListener {
+            snsViewModel.sendSuccessful.observe(viewLifecycleOwner) {
+                savedStateHandle.set(SEND_SUCCESSFUL, it)
+                findNavController().popBackStack()
+            }
             snsViewModel.sendSnsPost(binding.snsPostContent.text.toString())
-            findNavController().popBackStack()
         }
+
         return binding.root
     }
 }

@@ -10,6 +10,10 @@ import androidx.navigation.fragment.findNavController
 import com.example.programmersnsandroidclient.databinding.FragmentEditUserProfileBinding
 
 class EditUserProfileFragment : Fragment() {
+    companion object {
+        const val UPDATE_SUCCESSFUL = "UPDATE_SUCCESSFUL"
+    }
+
     private val snsViewModel: SnsViewModel by activityViewModels()
 
     override fun onCreateView(
@@ -20,12 +24,16 @@ class EditUserProfileFragment : Fragment() {
         binding.viewModel = snsViewModel
         binding.lifecycleOwner = viewLifecycleOwner
 
+        val savedStateHandle = findNavController().previousBackStackEntry!!.savedStateHandle
         binding.updateButton.setOnClickListener {
+            snsViewModel.updateSuccessful.observe(viewLifecycleOwner) {
+                savedStateHandle.set(UPDATE_SUCCESSFUL, it)
+                findNavController().popBackStack()
+            }
             snsViewModel.updateUserProfile(
                 binding.snsUserName.text.toString(),
                 binding.snsUserDiscription.text.toString()
             )
-            findNavController().popBackStack()
         }
 
         return binding.root

@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.programmersnsandroidclient.sns.SnsContent
 import com.example.programmersnsandroidclient.sns.SnsRepository
 import com.example.programmersnsandroidclient.sns.SnsUser
+import com.hadilq.liveevent.LiveEvent
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -28,6 +29,12 @@ class SnsViewModel(
     private val _isRefreshing: MutableLiveData<Boolean> = MutableLiveData(false)
     val isRefreshing: LiveData<Boolean> = _isRefreshing
 
+    private val _updateSuccessful = LiveEvent<Boolean>()
+    val updateSuccessful: LiveData<Boolean> = _updateSuccessful
+
+    private val _sendSuccessful = LiveEvent<Boolean>()
+    val sendSuccessful: LiveData<Boolean> = _sendSuccessful
+
     private val _currentUser: MutableLiveData<SnsUser> = MutableLiveData()
     val currentUser: LiveData<SnsUser> = _currentUser
 
@@ -48,15 +55,19 @@ class SnsViewModel(
 
     fun sendSnsPost(content: String) {
         viewModelScope.launch(dispatcher) {
-            snsRepository.sendSnsPost(content)
+            val isSuccessful = snsRepository.sendSnsPost(content)
+            _sendSuccessful.postValue(isSuccessful)
         }
     }
 
     fun updateUserProfile(name: String, description: String) {
         viewModelScope.launch(dispatcher) {
-            snsRepository.updateUser(name, description)?.let {
-                _currentUser.postValue(SnsUser(it, name, description))
-                snsRepository.storeCurrentUserId(it)
+            val userId = snsRepository.updateUser(name, description)
+            val isSuccessful = userId != null
+            _updateSuccessful.postValue(isSuccessful)
+            if (userId != null) {  // ここを isSuccessful に置き換えるとエラーが出る
+                _currentUser.postValue(SnsUser(userId, name, description))
+                snsRepository.storeCurrentUserId(userId)
             }
         }
     }

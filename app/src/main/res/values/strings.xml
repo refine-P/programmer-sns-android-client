@@ -18,4 +18,8 @@
     <string name="instruction_for_unregistered_user">ユーザー登録をしたい場合はプロフィールを編集してね！</string>
     <string name="enter_name">名前を入力</string>
     <string name="enter_description">自己紹介を入力</string>
+    <string name="update_failure">更新に失敗しました…</string>
+    <string name="update_success">更新に成功しました！</string>
+    <string name="send_failure">投稿に失敗しました…</string>
+    <string name="send_success">投稿に成功しました！</string>
 </resources>

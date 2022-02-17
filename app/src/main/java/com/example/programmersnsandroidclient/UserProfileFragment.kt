@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.programmersnsandroidclient.databinding.FragmentUserProfileBinding
+import com.google.android.material.snackbar.Snackbar
 
 class UserProfileFragment : Fragment() {
     private val snsViewModel: SnsViewModel by activityViewModels()
@@ -22,6 +23,19 @@ class UserProfileFragment : Fragment() {
 
         binding.editButton.setOnClickListener {
             findNavController().navigate(R.id.action_edit_user_profile)
+        }
+
+        val savedStateHandle = findNavController().currentBackStackEntry!!.savedStateHandle
+        savedStateHandle.getLiveData<Boolean>(EditUserProfileFragment.UPDATE_SUCCESSFUL).observe(viewLifecycleOwner) {
+            val message = if (it) {
+                R.string.update_success
+            } else {
+                R.string.update_failure
+            }
+            Snackbar.make(binding.updateSnackbar, message, Snackbar.LENGTH_SHORT).show()
+
+            // 値を使うのは一回だけにしたいので、使ったら削除する
+            savedStateHandle.remove<Boolean>(EditUserProfileFragment.UPDATE_SUCCESSFUL)
         }
 
         return binding.root
