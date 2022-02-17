@@ -34,6 +34,8 @@ class TimelineFragment : Fragment() {
         )
         recyclerView.adapter = ConcatAdapter(timelineAdapter, loadMoreAdapter)
 
+        // TODO: refreshしたときにもトップにスクロールする
+        // timelineにどの操作によって更新されたかの状態を持たせるといいかも？
         snsViewModel.timeline.observe(viewLifecycleOwner) { timeline ->
             // We need to scroll to the top when we fetch the TL for the first time.
             if (timelineAdapter.itemCount == 0) {  // The first time to fetch the TL.
