@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.programmersnsandroidclient.databinding.FragmentTimelineBinding
+import com.example.programmersnsandroidclient.sns.TimelineState
 import com.google.android.material.snackbar.Snackbar
 
 class TimelineFragment : Fragment() {
@@ -34,14 +35,17 @@ class TimelineFragment : Fragment() {
         )
         recyclerView.adapter = ConcatAdapter(timelineAdapter, loadMoreAdapter)
 
-        // TODO: refreshしたときにもトップにスクロールする
-        // timelineにどの操作によって更新されたかの状態を持たせるといいかも？
         snsViewModel.timeline.observe(viewLifecycleOwner) { timeline ->
-            // We need to scroll to the top when we fetch the TL for the first time.
-            if (timelineAdapter.itemCount == 0) {  // The first time to fetch the TL.
-                timelineAdapter.submitList(timeline) { recyclerView.scrollToPosition(0) }
-            } else {
-                timelineAdapter.submitList(timeline)
+            // タイムラインのInit or Refresh時は最上部にスクロールする
+            when (timeline.state) {
+                TimelineState.INIT, TimelineState.REFRESH -> {
+                    timelineAdapter.submitList(timeline.contents) {
+                        recyclerView.scrollToPosition(0)
+                    }
+                }
+                else -> {
+                    timelineAdapter.submitList(timeline.contents)
+                }
             }
         }
 
@@ -58,6 +62,9 @@ class TimelineFragment : Fragment() {
                     R.string.send_failure
                 }
                 Snackbar.make(binding.sendSnackbar, message, Snackbar.LENGTH_SHORT).show()
+
+                // 投稿成功時はタイムラインをRefreshして、自分の投稿が確認できるようにする
+                if (it) snsViewModel.refresh()
 
                 // 値を使うのは一回だけにしたいので、使ったら削除する
                 savedStateHandle.remove<Boolean>(SendSnsPostFragment.SEND_SUCCESSFUL)

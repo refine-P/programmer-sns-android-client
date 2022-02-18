@@ -91,7 +91,7 @@ class SnsViewModelTest {
         repository.storeCurrentUserId(dummyCurrentUserId)
 
         viewmodel = SnsViewModel(repository, 1, 1)
-        assertEquals(emptyList<List<SnsContent>>(), viewmodel.timeline.value)
+        assertNull(viewmodel.timeline.value)
         assertEquals(true, viewmodel.isLoading.value)
         assertEquals(false, viewmodel.isRefreshing.value)
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
@@ -100,7 +100,8 @@ class SnsViewModelTest {
             SnsContent("dummy_content_id", "dummy_name", "dummy_text")
         )
         assertEquals(dummyCurrentUser, viewmodel.currentUser.value)
-        assertEquals(expected, viewmodel.timeline.value)
+        assertEquals(expected, viewmodel.timeline.value?.contents)
+        assertEquals(TimelineState.INIT, viewmodel.timeline.value?.state)
         assertEquals(false, viewmodel.isLoading.value)
         assertEquals(false, viewmodel.isRefreshing.value)
     }
@@ -112,13 +113,13 @@ class SnsViewModelTest {
         repository.storeCurrentUserId(dummyCurrentUserId)
 
         viewmodel = SnsViewModel(repository, 1, 1)
-        assertEquals(emptyList<List<SnsContent>>(), viewmodel.timeline.value)
+        assertNull(viewmodel.timeline.value)
         assertEquals(true, viewmodel.isLoading.value)
         assertEquals(false, viewmodel.isRefreshing.value)
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
         assertNull(viewmodel.currentUser.value)
-        assertEquals(emptyList<SnsContent>(), viewmodel.timeline.value)
+        assertNull(viewmodel.timeline.value)
         assertEquals(false, viewmodel.isLoading.value)
         assertEquals(false, viewmodel.isRefreshing.value)
     }
@@ -143,7 +144,7 @@ class SnsViewModelTest {
             SnsContent("dummy_content_id", "dummy_name", "dummy_text"),
             SnsContent("dummy_content_id2", "dummy_user_id2", "dummy_text2")
         )
-        assertEquals(expectedBeforeRefresh, viewmodel.timeline.value)
+        assertEquals(expectedBeforeRefresh, viewmodel.timeline.value?.contents)
 
         // refreshすると、ユーザーの情報および投稿がすべて読み込まれる。
         setUpUserDao()  // ユーザーが読み込まれるタイミングで UserDao を更新
@@ -156,7 +157,8 @@ class SnsViewModelTest {
             SnsContent("dummy_content_id", "dummy_name", "dummy_text"),
             SnsContent("dummy_content_id2", "dummy_name2", "dummy_text2")
         )
-        assertEquals(expected, viewmodel.timeline.value)
+        assertEquals(expected, viewmodel.timeline.value?.contents)
+        assertEquals(TimelineState.REFRESH, viewmodel.timeline.value?.state)
         assertEquals(false, viewmodel.isLoading.value)
         assertEquals(false, viewmodel.isRefreshing.value)
     }
@@ -181,7 +183,7 @@ class SnsViewModelTest {
             SnsContent("dummy_content_id", "dummy_name", "dummy_text"),
             SnsContent("dummy_content_id2", "dummy_user_id2", "dummy_text2")
         )
-        assertEquals(expectedBeforeRefresh, viewmodel.timeline.value)
+        assertEquals(expectedBeforeRefresh, viewmodel.timeline.value?.contents)
 
         // refreshを失敗させる。タイムラインはrefresh前のまま。
         setUpService(false)
@@ -191,7 +193,8 @@ class SnsViewModelTest {
         assertEquals(true, viewmodel.isRefreshing.value)
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
-        assertEquals(expectedBeforeRefresh, viewmodel.timeline.value)
+        assertEquals(expectedBeforeRefresh, viewmodel.timeline.value?.contents)
+        assertEquals(TimelineState.LOAD_MORE, viewmodel.timeline.value?.state)
         assertEquals(false, viewmodel.isLoading.value)
         assertEquals(false, viewmodel.isRefreshing.value)
     }
@@ -208,7 +211,7 @@ class SnsViewModelTest {
         val expectedBeforeLoadMore = listOf(
             SnsContent("dummy_content_id", "dummy_name", "dummy_text"),
         )
-        assertEquals(expectedBeforeLoadMore, viewmodel.timeline.value)
+        assertEquals(expectedBeforeLoadMore, viewmodel.timeline.value?.contents)
         assertEquals(true, viewmodel.isLoading.value)
         assertEquals(false, viewmodel.isRefreshing.value)
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
@@ -217,7 +220,8 @@ class SnsViewModelTest {
             SnsContent("dummy_content_id", "dummy_name", "dummy_text"),
             SnsContent("dummy_content_id2", "dummy_name2", "dummy_text2")
         )
-        assertEquals(expected, viewmodel.timeline.value)
+        assertEquals(expected, viewmodel.timeline.value?.contents)
+        assertEquals(TimelineState.LOAD_MORE, viewmodel.timeline.value?.state)
         assertEquals(false, viewmodel.isLoading.value)
         assertEquals(false, viewmodel.isRefreshing.value)
     }
@@ -236,12 +240,13 @@ class SnsViewModelTest {
         val expectedBeforeLoadMore = listOf(
             SnsContent("dummy_content_id", "dummy_name", "dummy_text"),
         )
-        assertEquals(expectedBeforeLoadMore, viewmodel.timeline.value)
+        assertEquals(expectedBeforeLoadMore, viewmodel.timeline.value?.contents)
         assertEquals(true, viewmodel.isLoading.value)
         assertEquals(false, viewmodel.isRefreshing.value)
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
-        assertEquals(expectedBeforeLoadMore, viewmodel.timeline.value)
+        assertEquals(expectedBeforeLoadMore, viewmodel.timeline.value?.contents)
+        assertEquals(TimelineState.INIT, viewmodel.timeline.value?.state)
         assertEquals(false, viewmodel.isLoading.value)
         assertEquals(false, viewmodel.isRefreshing.value)
     }
@@ -259,11 +264,11 @@ class SnsViewModelTest {
         val expectedClientTimeline = listOf(
             SnsContent("dummy_content_id", "dummy_name", "dummy_text"),
         )
-        assertEquals(expectedClientTimeline, viewmodel.timeline.value)
+        assertEquals(expectedClientTimeline, viewmodel.timeline.value?.contents)
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
         // クライアント側は timeline を load してないのでそのまま
-        assertEquals(expectedClientTimeline, viewmodel.timeline.value)
+        assertEquals(expectedClientTimeline, viewmodel.timeline.value?.contents)
 
         // サーバーへの投稿は成功
         assertEquals(true, viewmodel.sendSuccessful.value)
@@ -284,11 +289,11 @@ class SnsViewModelTest {
         val expectedClientTimeline = listOf(
             SnsContent("dummy_content_id", "dummy_name", "dummy_text"),
         )
-        assertEquals(expectedClientTimeline, viewmodel.timeline.value)
+        assertEquals(expectedClientTimeline, viewmodel.timeline.value?.contents)
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
         // 投稿に失敗するので、クライアントとサーバーの両方とも変化なし
-        assertEquals(expectedClientTimeline, viewmodel.timeline.value)
+        assertEquals(expectedClientTimeline, viewmodel.timeline.value?.contents)
         assertEquals(false, viewmodel.sendSuccessful.value)
     }
 

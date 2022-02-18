@@ -4,9 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.programmersnsandroidclient.sns.SnsContent
-import com.example.programmersnsandroidclient.sns.SnsRepository
-import com.example.programmersnsandroidclient.sns.SnsUser
+import com.example.programmersnsandroidclient.sns.*
 import com.hadilq.liveevent.LiveEvent
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -20,8 +18,8 @@ class SnsViewModel(
 ) : ViewModel() {
     private var timelineNumLimit = initialTimelineNumLimit
 
-    private val _timeline: MutableLiveData<List<SnsContent>> = MutableLiveData(emptyList())
-    val timeline: LiveData<List<SnsContent>> = _timeline
+    private val _timeline: MutableLiveData<SnsTimeline> = MutableLiveData()
+    val timeline: LiveData<SnsTimeline> = _timeline
 
     private val _isLoading: MutableLiveData<Boolean> = MutableLiveData(true)
     val isLoading: LiveData<Boolean> = _isLoading
@@ -91,7 +89,7 @@ class SnsViewModel(
                 timelineNumLimit
             }
             snsRepository.fetchTimeline(numLimit, shouldRefreshUserCache)?.let {
-                _timeline.postValue(it)
+                _timeline.postValue(SnsTimeline(it, state))
                 if (shouldLoadMore) timelineNumLimit = numLimit
             }
             isDoing.postValue(false)
@@ -105,10 +103,4 @@ class SnsViewModel(
             }
         }
     }
-}
-
-enum class TimelineState {
-    INIT,
-    REFRESH,
-    LOAD_MORE,
 }
