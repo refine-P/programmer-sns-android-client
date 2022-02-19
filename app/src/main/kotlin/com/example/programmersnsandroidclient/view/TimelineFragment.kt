@@ -61,9 +61,10 @@ class TimelineFragment : Fragment() {
             findNavController().navigate(R.id.action_send)
         }
 
-        val savedStateHandle = findNavController().currentBackStackEntry!!.savedStateHandle
+        val currentBackStackEntry = findNavController().currentBackStackEntry!!
+        val savedStateHandle = currentBackStackEntry.savedStateHandle
         savedStateHandle.getLiveData<Boolean>(SendSnsPostFragment.SEND_SUCCESSFUL)
-            .observe(viewLifecycleOwner) {
+            .observe(currentBackStackEntry) {
                 val message = if (it) {
                     R.string.send_success
                 } else {

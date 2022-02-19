@@ -27,9 +27,10 @@ class UserProfileFragment : Fragment() {
             findNavController().navigate(R.id.action_edit_user_profile)
         }
 
-        val savedStateHandle = findNavController().currentBackStackEntry!!.savedStateHandle
+        val currentBackStackEntry = findNavController().currentBackStackEntry!!
+        val savedStateHandle = currentBackStackEntry.savedStateHandle
         savedStateHandle.getLiveData<Boolean>(EditUserProfileFragment.UPDATE_SUCCESSFUL)
-            .observe(viewLifecycleOwner) {
+            .observe(currentBackStackEntry) {
                 val message = if (it) {
                     R.string.update_success
                 } else {
