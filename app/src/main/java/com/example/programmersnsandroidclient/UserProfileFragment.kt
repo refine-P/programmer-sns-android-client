@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.programmersnsandroidclient.databinding.FragmentUserProfileBinding
+import com.example.programmersnsandroidclient.viewmodel.SnsViewModel
 import com.google.android.material.snackbar.Snackbar
 
 class UserProfileFragment : Fragment() {

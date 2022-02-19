@@ -31,6 +31,18 @@
         tools:layout="@layout/fragment_edit_user_profile" />
 
     <fragment
+        android:id="@+id/user_contents"
+        android:name="com.example.programmersnsandroidclient.UserContentsFragment"
+        android:label="@string/user_contents"
+        tools:layout="@layout/fragment_edit_user_profile">
+        <argument
+            android:name="userId"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+    </fragment>
+
+    <fragment
         android:id="@+id/send_sns_post"
         android:name="com.example.programmersnsandroidclient.SendSnsPostFragment"
         android:label="@string/sns_post"

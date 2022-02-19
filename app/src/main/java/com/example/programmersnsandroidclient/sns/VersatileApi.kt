@@ -7,6 +7,12 @@ interface VersatileApi {
     @GET("text/all?\$orderby=_created_at%20desc")
     suspend fun fetchTimeline(@Query("\$limit") limit: Int): Response<List<SnsContentInternal>>
 
+    @GET("text/all?\$orderby=_created_at%20desc")
+    suspend fun fetchTimelineWithFilter(
+        @Query("\$limit") limit: Int,
+        @Query("\$filter") filter: String
+    ): Response<List<SnsContentInternal>>
+
     @GET("user/{user_id}")
     suspend fun fetchUser(@Path("user_id") userId: String): Response<SnsUser>
 

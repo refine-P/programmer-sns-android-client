@@ -15,6 +15,13 @@ class MockVersatileApi(
         return delegate.returningResponse(allTimeline.take(limit)).fetchTimeline(limit)
     }
 
+    override suspend fun fetchTimelineWithFilter(
+        limit: Int,
+        filter: String
+    ): Response<List<SnsContentInternal>> {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun fetchUser(userId: String): Response<SnsUser> {
         val targetUser = allUsers.find { it.id == userId }
         return delegate.returningResponse(targetUser).fetchUser(userId)

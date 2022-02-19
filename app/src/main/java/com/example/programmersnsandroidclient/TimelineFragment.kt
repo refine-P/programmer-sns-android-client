@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.programmersnsandroidclient.databinding.FragmentTimelineBinding
 import com.example.programmersnsandroidclient.sns.TimelineState
+import com.example.programmersnsandroidclient.viewmodel.SnsViewModel
 import com.google.android.material.snackbar.Snackbar
 
 class TimelineFragment : Fragment() {
@@ -26,7 +27,10 @@ class TimelineFragment : Fragment() {
         binding.lifecycleOwner = viewLifecycleOwner
 
         val timelineAdapter = TimelineAdapter()
-        val loadMoreAdapter = LoadMoreAdapter(viewLifecycleOwner, snsViewModel)
+        val loadMoreAdapter =
+            LoadMoreAdapter(viewLifecycleOwner, LoadMoreArgs(snsViewModel.isLoading) {
+                snsViewModel.loadMore()
+            })
 
         val recyclerView = binding.timeline
         recyclerView.layoutManager = LinearLayoutManager(context)

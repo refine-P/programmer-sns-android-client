@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.programmersnsandroidclient.databinding.FragmentSendSnsPostBinding
+import com.example.programmersnsandroidclient.viewmodel.SnsViewModel
 
 class SendSnsPostFragment : Fragment() {
     companion object {

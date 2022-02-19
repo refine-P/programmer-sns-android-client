@@ -32,12 +32,15 @@ class SnsRepository(
         timelineNumLimit: Int,
         shouldRefreshUserCache: Boolean
     ): List<SnsContent>? {
-        if (shouldRefreshUserCache) refreshUserCache()
+        return fetchContents(timelineNumLimit, shouldRefreshUserCache)
+    }
 
-        val timelineInternal = service.fetchTimeline(timelineNumLimit).body() ?: return null
-        return timelineInternal.map {
-            loadSnsPost(it)
-        }
+    suspend fun fetchUserContents(
+        userId: String,
+        timelineNumLimit: Int,
+        shouldRefreshUserCache: Boolean
+    ): List<SnsContent>? {
+        return fetchContents(timelineNumLimit, shouldRefreshUserCache, userId)
     }
 
     suspend fun fetchUser(userId: String): SnsUser? {
@@ -65,6 +68,24 @@ class SnsRepository(
             service.fetchAllUsers().body()?.let {
                 userDao.insertUsers(it)
             }
+        }
+    }
+
+    private suspend fun fetchContents(
+        timelineNumLimit: Int,
+        shouldRefreshUserCache: Boolean,
+        userId: String? = null,
+    ): List<SnsContent>? {
+        if (shouldRefreshUserCache) refreshUserCache()
+
+        val res = if (userId == null) {  // userIdがnullなら全ユーザーの投稿を取得
+            service.fetchTimeline(timelineNumLimit)
+        } else {
+            service.fetchTimelineWithFilter(timelineNumLimit, "_user_id eq '%s'".format(userId))
+        }
+        val timelineInternal = res.body() ?: return null
+        return timelineInternal.map {
+            loadSnsPost(it)
         }
     }
 

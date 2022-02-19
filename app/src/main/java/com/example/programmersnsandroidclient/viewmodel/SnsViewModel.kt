@@ -1,10 +1,13 @@
-package com.example.programmersnsandroidclient
+package com.example.programmersnsandroidclient.viewmodel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.programmersnsandroidclient.sns.*
+import com.example.programmersnsandroidclient.sns.SnsRepository
+import com.example.programmersnsandroidclient.sns.SnsTimeline
+import com.example.programmersnsandroidclient.sns.SnsUser
+import com.example.programmersnsandroidclient.sns.TimelineState
 import com.hadilq.liveevent.LiveEvent
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers

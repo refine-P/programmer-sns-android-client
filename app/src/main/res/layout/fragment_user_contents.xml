@@ -7,34 +7,13 @@
 
         <variable
             name="viewModel"
-            type="com.example.programmersnsandroidclient.viewmodel.SnsViewModel" />
+            type="com.example.programmersnsandroidclient.viewmodel.SnsUserContentsViewModel" />
     </data>
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".TimelineFragment">
-
-        <androidx.coordinatorlayout.widget.CoordinatorLayout
-            android:id="@+id/send_snackbar"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_toStartOf="@id/post_button" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/post_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginBottom="16dp"
-            android:layout_marginEnd="16dp"
-            android:clickable="true"
-            android:contentDescription="@string/sns_post"
-            android:focusable="true"
-            app:backgroundTint="@android:color/holo_blue_dark"
-            app:srcCompat="@drawable/ic_baseline_send_24"
-            app:tint="@android:color/background_light" />
+        tools:context=".UserContentsFragment">
 
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/swipe_refresh"

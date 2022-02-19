@@ -5,6 +5,7 @@
         android:title="@string/profile"
         android:icon="@drawable/ic_baseline_person_24" />
     <item
+        android:id="@+id/user_contents"
         android:title="@string/user_contents"
         android:icon="@drawable/ic_baseline_article_24" />
 </menu>

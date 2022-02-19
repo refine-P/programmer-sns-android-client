@@ -8,6 +8,7 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import com.example.programmersnsandroidclient.databinding.ActivityMainBinding
 import com.example.programmersnsandroidclient.databinding.DrawerHeaderBinding
+import com.example.programmersnsandroidclient.viewmodel.SnsViewModel
 
 class MainActivity : AppCompatActivity() {
     private val snsViewModel: SnsViewModel by viewModels()
@@ -27,6 +28,12 @@ class MainActivity : AppCompatActivity() {
 
         activityMainBinding.toolbar.setupWithNavController(navController, appBarConfiguration)
         activityMainBinding.navView.setupWithNavController(navController)
+
+        val userContentsMenu = activityMainBinding.navView.menu.findItem(R.id.user_contents)
+        userContentsMenu.isEnabled = false
+        snsViewModel.currentUser.observe(this) {
+            userContentsMenu.isEnabled = true
+        }
 
         val drawerHeaderBinding =
             DrawerHeaderBinding.inflate(layoutInflater, activityMainBinding.navView, false)

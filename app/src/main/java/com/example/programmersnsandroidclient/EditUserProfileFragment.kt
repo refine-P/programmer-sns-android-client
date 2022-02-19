@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.programmersnsandroidclient.databinding.FragmentEditUserProfileBinding
+import com.example.programmersnsandroidclient.viewmodel.SnsViewModel
 
 class EditUserProfileFragment : Fragment() {
     companion object {
