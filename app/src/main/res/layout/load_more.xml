@@ -8,7 +8,7 @@
 
         <variable
             name="args"
-            type="com.example.programmersnsandroidclient.LoadMoreArgs" />
+            type="com.example.programmersnsandroidclient.view.adapter.LoadMoreArgs" />
     </data>
 
     <FrameLayout

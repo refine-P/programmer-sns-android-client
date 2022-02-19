@@ -6,7 +6,7 @@
 
     <fragment
         android:id="@+id/timeline_fragment"
-        android:name="com.example.programmersnsandroidclient.TimelineFragment"
+        android:name="com.example.programmersnsandroidclient.view.TimelineFragment"
         android:label="@string/app_name"
         tools:layout="@layout/fragment_timeline">
         <action
@@ -16,7 +16,7 @@
 
     <fragment
         android:id="@+id/user_profile"
-        android:name="com.example.programmersnsandroidclient.UserProfileFragment"
+        android:name="com.example.programmersnsandroidclient.view.UserProfileFragment"
         android:label="@string/profile"
         tools:layout="@layout/fragment_edit_user_profile">
         <action
@@ -26,13 +26,13 @@
 
     <fragment
         android:id="@+id/edit_user_profile"
-        android:name="com.example.programmersnsandroidclient.EditUserProfileFragment"
+        android:name="com.example.programmersnsandroidclient.view.EditUserProfileFragment"
         android:label="@string/edit_profile"
         tools:layout="@layout/fragment_edit_user_profile" />
 
     <fragment
         android:id="@+id/user_contents"
-        android:name="com.example.programmersnsandroidclient.UserContentsFragment"
+        android:name="com.example.programmersnsandroidclient.view.UserContentsFragment"
         android:label="@string/user_contents"
         tools:layout="@layout/fragment_edit_user_profile">
         <argument
@@ -44,7 +44,7 @@
 
     <fragment
         android:id="@+id/send_sns_post"
-        android:name="com.example.programmersnsandroidclient.SendSnsPostFragment"
+        android:name="com.example.programmersnsandroidclient.view.SendSnsPostFragment"
         android:label="@string/sns_post"
         tools:layout="@layout/fragment_send_sns_post" />
 

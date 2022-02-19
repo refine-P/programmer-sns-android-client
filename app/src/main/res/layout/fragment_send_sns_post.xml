@@ -7,7 +7,7 @@
         android:layout_height="match_parent"
         android:gravity="end"
         android:orientation="vertical"
-        tools:context=".SendSnsPostFragment">
+        tools:context=".view.SendSnsPostFragment">
 
         <EditText
             android:id="@+id/sns_post_content"

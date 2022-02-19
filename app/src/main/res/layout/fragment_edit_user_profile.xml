@@ -14,7 +14,7 @@
         android:layout_height="match_parent"
         android:gravity="end"
         android:orientation="vertical"
-        tools:context=".EditUserProfileFragment">
+        tools:context=".view.EditUserProfileFragment">
 
         <TextView
             android:layout_width="match_parent"

@@ -14,7 +14,7 @@
         android:layout_height="match_parent"
         android:gravity="end"
         android:orientation="vertical"
-        tools:context=".UserProfileFragment">
+        tools:context=".view.UserProfileFragment">
 
         <TextView
             android:id="@+id/sns_user_name"

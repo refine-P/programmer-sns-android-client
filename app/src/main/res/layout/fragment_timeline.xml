@@ -13,7 +13,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".TimelineFragment">
+        tools:context=".view.TimelineFragment">
 
         <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:id="@+id/send_snackbar"
