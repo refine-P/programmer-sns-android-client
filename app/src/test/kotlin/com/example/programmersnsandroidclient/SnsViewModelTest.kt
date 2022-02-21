@@ -5,6 +5,8 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import com.example.programmersnsandroidclient.model.*
 import com.example.programmersnsandroidclient.viewmodel.SnsViewModel
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Rule
@@ -15,7 +17,7 @@ import org.mockito.Mockito.mock
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.mock.MockRetrofit
 import retrofit2.mock.NetworkBehavior
 import java.util.concurrent.TimeUnit
@@ -36,7 +38,11 @@ class SnsViewModelTest {
 
     private val retrofit = Retrofit.Builder()
         .baseUrl("https://versatileapi.herokuapp.com/api/")
-        .addConverterFactory(GsonConverterFactory.create())
+        .addConverterFactory(
+            MoshiConverterFactory.create(
+                Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
+            )
+        )
         .build()
     private val behavior = NetworkBehavior.create()
     private val delegate = MockRetrofit.Builder(retrofit).networkBehavior(behavior).build()
@@ -50,8 +56,8 @@ class SnsViewModelTest {
 
     private lateinit var viewmodel: SnsViewModel
     private val dummyTimeline = listOf(
-        SnsContentInternal("dummy_content_id", "dummy_text", "", "", "dummy_user_id", "", ""),
-        SnsContentInternal("dummy_content_id2", "dummy_text2", "", "", "dummy_user_id2", "", "")
+        SnsContentInternal("dummy_content_id", "dummy_text", null, null, "dummy_user_id", "", ""),
+        SnsContentInternal("dummy_content_id2", "dummy_text2", null, null, "dummy_user_id2", "", "")
     )
     private val dummyUsers = listOf(
         SnsUser("dummy_user_id", "dummy_name", "dummy_description"),

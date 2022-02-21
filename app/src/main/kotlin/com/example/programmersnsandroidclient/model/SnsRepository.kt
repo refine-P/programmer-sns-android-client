@@ -3,17 +3,25 @@ package com.example.programmersnsandroidclient.model
 import android.content.Context
 import androidx.room.Room
 import com.example.programmersnsandroidclient.ProgrammerSns
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.converter.moshi.MoshiConverterFactory
 
 // TODO: 異常系の処理について検討した方が良いかも？
 class SnsRepository(
     private val service: VersatileApi = Retrofit.Builder()
         .baseUrl("https://versatileapi.herokuapp.com/api/")
-        .addConverterFactory(GsonConverterFactory.create())
+        .addConverterFactory(
+            MoshiConverterFactory.create(
+                Moshi.Builder().add(
+                    KotlinJsonAdapterFactory()
+                ).build()
+            )
+        )
         .build()
         .create(VersatileApi::class.java),
     private val appContext: Context = ProgrammerSns.appContext,
