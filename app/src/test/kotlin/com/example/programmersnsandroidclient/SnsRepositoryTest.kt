@@ -5,6 +5,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.example.programmersnsandroidclient.model.*
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Test
@@ -39,7 +40,13 @@ class SnsRepositoryTest {
     private val appContext = ApplicationProvider.getApplicationContext<Context>()
     private val userDao = mock(UserDao::class.java)
     private val repository =
-        SnsRepository(service, appContext, userDao, shouldUseFullIdAsUnregisteredUserName = true)
+        SnsRepository(
+            service,
+            appContext,
+            userDao,
+            shouldUseFullIdAsUnregisteredUserName = true,
+            Dispatchers.IO
+        )
 
     private val dummyTimeline = listOf(
         SnsContentInternal("dummy_content_id", "dummy_text", null, null, "dummy_user_id", "", ""),
@@ -114,7 +121,15 @@ class SnsRepositoryTest {
 
         // UserとContentが追加される
         service.allTimeline = dummyTimeline.plus(
-            SnsContentInternal("dummy_content_id2", "dummy_text2", null, null, "dummy_user_id2", "", "")
+            SnsContentInternal(
+                "dummy_content_id2",
+                "dummy_text2",
+                null,
+                null,
+                "dummy_user_id2",
+                "",
+                ""
+            )
         )
         val newUser = SnsUser("dummy_user_id2", "dummy_name2", "dummy_description2")
         val latestUsers = dummyUsers.plus(newUser)
@@ -148,7 +163,15 @@ class SnsRepositoryTest {
 
         // UserとContentが追加される
         service.allTimeline = dummyTimeline.plus(
-            SnsContentInternal("dummy_content_id2", "dummy_text2", null, null, "dummy_user_id2", "", "")
+            SnsContentInternal(
+                "dummy_content_id2",
+                "dummy_text2",
+                null,
+                null,
+                "dummy_user_id2",
+                "",
+                ""
+            )
         )
         val newUser = SnsUser("dummy_user_id2", "dummy_name2", "dummy_description2")
         val latestUsers = dummyUsers.plus(newUser)

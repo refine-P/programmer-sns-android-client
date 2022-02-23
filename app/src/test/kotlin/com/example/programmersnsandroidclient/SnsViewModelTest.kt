@@ -7,6 +7,7 @@ import com.example.programmersnsandroidclient.model.*
 import com.example.programmersnsandroidclient.viewmodel.SnsViewModel
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import kotlinx.coroutines.Dispatchers
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Rule
@@ -52,7 +53,13 @@ class SnsViewModelTest {
     private val appContext = ApplicationProvider.getApplicationContext<Context>()
     private val userDao = mock(UserDao::class.java)
     private val repository =
-        SnsRepository(service, appContext, userDao, shouldUseFullIdAsUnregisteredUserName = true)
+        SnsRepository(
+            service,
+            appContext,
+            userDao,
+            shouldUseFullIdAsUnregisteredUserName = true,
+            Dispatchers.IO
+        )
 
     private lateinit var viewmodel: SnsViewModel
     private val dummyTimeline = listOf(
@@ -97,7 +104,7 @@ class SnsViewModelTest {
         setUpUserDao()
         repository.storeCurrentUserId(dummyCurrentUserId)
 
-        viewmodel = SnsViewModel(repository, 1, 1)
+        viewmodel = SnsViewModel(repository, 1, 1, Dispatchers.IO)
         assertNull(viewmodel.timeline.value)
         assertEquals(true, viewmodel.isLoading.value)
         assertEquals(false, viewmodel.isRefreshing.value)
@@ -119,7 +126,7 @@ class SnsViewModelTest {
         setUpUserDao()
         repository.storeCurrentUserId(dummyCurrentUserId)
 
-        viewmodel = SnsViewModel(repository, 1, 1)
+        viewmodel = SnsViewModel(repository, 1, 1, Dispatchers.IO)
         assertNull(viewmodel.timeline.value)
         assertEquals(true, viewmodel.isLoading.value)
         assertEquals(false, viewmodel.isRefreshing.value)
@@ -137,7 +144,7 @@ class SnsViewModelTest {
         // viewmodelを初期化した時点でユーザーの情報が読み込まれる。
         setUpService(true, 1)
         setUpUserDao(1)
-        viewmodel = SnsViewModel(repository, 1, 1)
+        viewmodel = SnsViewModel(repository, 1, 1, Dispatchers.IO)
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
         // ユーザーの情報が読み込まれた後で、ユーザーの情報を増やす。
@@ -176,7 +183,7 @@ class SnsViewModelTest {
         // viewmodelを初期化した時点でユーザーの情報が読み込まれる。
         setUpService(true, 1)
         setUpUserDao(1)
-        viewmodel = SnsViewModel(repository, 1, 1)
+        viewmodel = SnsViewModel(repository, 1, 1, Dispatchers.IO)
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
         // ユーザーの情報が読み込まれた後で、ユーザーの情報を増やす。
@@ -211,7 +218,7 @@ class SnsViewModelTest {
         setUpService(true)
         setUpUserDao()
 
-        viewmodel = SnsViewModel(repository, 1, 1)
+        viewmodel = SnsViewModel(repository, 1, 1, Dispatchers.IO)
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
         viewmodel.loadMore()
@@ -238,7 +245,7 @@ class SnsViewModelTest {
         // viewmodel の初期化は成功させる
         setUpService(true)
         setUpUserDao()
-        viewmodel = SnsViewModel(repository, 1, 1)
+        viewmodel = SnsViewModel(repository, 1, 1, Dispatchers.IO)
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
         // それ以降は失敗
@@ -263,7 +270,7 @@ class SnsViewModelTest {
         setUpService(true)
         setUpUserDao()
 
-        viewmodel = SnsViewModel(repository, 1, 1)
+        viewmodel = SnsViewModel(repository, 1, 1, Dispatchers.IO)
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
         val content = "dummy_text%s".format(dummyTimeline.size + 1)
@@ -286,7 +293,7 @@ class SnsViewModelTest {
         // viewmodel の初期化は成功させる
         setUpService(true)
         setUpUserDao()
-        viewmodel = SnsViewModel(repository, 1, 1)
+        viewmodel = SnsViewModel(repository, 1, 1, Dispatchers.IO)
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
         // それ以降は失敗
@@ -309,7 +316,7 @@ class SnsViewModelTest {
         setUpService(true)
         setUpUserDao()
 
-        viewmodel = SnsViewModel(repository, 1, 1)
+        viewmodel = SnsViewModel(repository, 1, 1, Dispatchers.IO)
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
         assertNull(repository.loadCurrentUserId())
@@ -332,7 +339,7 @@ class SnsViewModelTest {
         // viewmodel の初期化は成功させる
         setUpService(true)
         setUpUserDao()
-        viewmodel = SnsViewModel(repository, 1, 1)
+        viewmodel = SnsViewModel(repository, 1, 1, Dispatchers.IO)
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
         assertNull(repository.loadCurrentUserId())

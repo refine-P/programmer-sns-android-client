@@ -1,39 +1,30 @@
 package com.example.programmersnsandroidclient.model
 
 import android.content.Context
-import androidx.room.Room
-import com.example.programmersnsandroidclient.ProgrammerSns
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
+import javax.inject.Inject
 
 // TODO: 異常系の処理について検討した方が良いかも？
 class SnsRepository(
-    private val service: VersatileApi = Retrofit.Builder()
-        .baseUrl("https://versatileapi.herokuapp.com/api/")
-        .addConverterFactory(
-            MoshiConverterFactory.create(
-                Moshi.Builder().add(
-                    KotlinJsonAdapterFactory()
-                ).build()
-            )
-        )
-        .build()
-        .create(VersatileApi::class.java),
-    private val appContext: Context = ProgrammerSns.appContext,
-    private val userDao: UserDao = Room.databaseBuilder(
-        appContext, UserDatabase::class.java, "user-cache"
-    ).build().userDao(),
+    private val service: VersatileApi,
+    appContext: Context,
+    private val userDao: UserDao,
     // 未登録ユーザーの名前をユーザーIDそのものにするかどうかのフラグ（テスト用）。
     // falseの場合、名前をユーザーIDの先頭8桁+" [未登録]"にする。
     // テスト時にのみtrueにする。
-    private val shouldUseFullIdAsUnregisteredUserName: Boolean = false,
-    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
+    private val shouldUseFullIdAsUnregisteredUserName: Boolean,
+    private val dispatcher: CoroutineDispatcher
 ) {
+    @Inject
+    constructor(
+        service: VersatileApi,
+        @ApplicationContext appContext: Context,
+        userDao: UserDao
+    ) : this(service, appContext, userDao, false, Dispatchers.IO)
+
     private val prefs = appContext.getSharedPreferences("user_info", Context.MODE_PRIVATE)
 
     suspend fun fetchTimeline(

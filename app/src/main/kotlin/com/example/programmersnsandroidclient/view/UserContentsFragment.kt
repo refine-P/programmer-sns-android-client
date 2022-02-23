@@ -10,13 +10,15 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.programmersnsandroidclient.databinding.FragmentUserContentsBinding
+import com.example.programmersnsandroidclient.model.TimelineState
 import com.example.programmersnsandroidclient.view.adapter.LoadMoreAdapter
 import com.example.programmersnsandroidclient.view.adapter.LoadMoreArgs
 import com.example.programmersnsandroidclient.view.adapter.TimelineAdapter
-import com.example.programmersnsandroidclient.databinding.FragmentUserContentsBinding
-import com.example.programmersnsandroidclient.model.TimelineState
 import com.example.programmersnsandroidclient.viewmodel.SnsUserContentsViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class UserContentsFragment : Fragment() {
     private val snsUserContentsViewModel: SnsUserContentsViewModel by viewModels()
     private val args: UserContentsFragmentArgs by navArgs()

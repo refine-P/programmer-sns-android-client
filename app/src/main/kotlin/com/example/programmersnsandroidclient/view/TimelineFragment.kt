@@ -10,12 +10,12 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.programmersnsandroidclient.view.adapter.LoadMoreAdapter
-import com.example.programmersnsandroidclient.view.adapter.LoadMoreArgs
 import com.example.programmersnsandroidclient.R
-import com.example.programmersnsandroidclient.view.adapter.TimelineAdapter
 import com.example.programmersnsandroidclient.databinding.FragmentTimelineBinding
 import com.example.programmersnsandroidclient.model.TimelineState
+import com.example.programmersnsandroidclient.view.adapter.LoadMoreAdapter
+import com.example.programmersnsandroidclient.view.adapter.LoadMoreArgs
+import com.example.programmersnsandroidclient.view.adapter.TimelineAdapter
 import com.example.programmersnsandroidclient.viewmodel.SnsViewModel
 import com.google.android.material.snackbar.Snackbar
 

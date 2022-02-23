@@ -7,17 +7,34 @@ import androidx.lifecycle.viewModelScope
 import com.example.programmersnsandroidclient.model.SnsRepository
 import com.example.programmersnsandroidclient.model.SnsTimeline
 import com.example.programmersnsandroidclient.model.TimelineState
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 // TODO: 後でリファクタリングする
+@HiltViewModel
 class SnsUserContentsViewModel(
-    private val snsRepository: SnsRepository = SnsRepository(),
-    initialTimelineNumLimit: Int = 50,
-    private val incrementalTimelineNumLimit: Int = 30,
-    private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val snsRepository: SnsRepository,
+    initialTimelineNumLimit: Int,
+    private val incrementalTimelineNumLimit: Int,
+    private val dispatcher: CoroutineDispatcher,
 ) : ViewModel() {
+    @Inject
+    constructor(snsRepository: SnsRepository) : this(
+        snsRepository,
+        DEFAULT_INITIAL_TIMELINE_NUM_LIMIT,
+        DEFAULT_INCREMENTAL_TINELINE_NUM_LIMIT,
+        Dispatchers.IO
+    )
+
+    // TODO: 定数用のファイルを作って、そこにこれを移動した方が良いかも？
+    companion object {
+        const val DEFAULT_INITIAL_TIMELINE_NUM_LIMIT: Int = 50
+        const val DEFAULT_INCREMENTAL_TINELINE_NUM_LIMIT: Int = 30
+    }
+
     private var timelineNumLimit = initialTimelineNumLimit
 
     private val _timeline: MutableLiveData<SnsTimeline> = MutableLiveData()

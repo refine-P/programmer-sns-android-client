@@ -10,7 +10,9 @@ import com.example.programmersnsandroidclient.R
 import com.example.programmersnsandroidclient.databinding.ActivityMainBinding
 import com.example.programmersnsandroidclient.databinding.DrawerHeaderBinding
 import com.example.programmersnsandroidclient.viewmodel.SnsViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private val snsViewModel: SnsViewModel by viewModels()
 
