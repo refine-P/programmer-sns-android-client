@@ -9,18 +9,18 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.programmersnsandroidclient.R
 import com.example.programmersnsandroidclient.databinding.FragmentUserProfileBinding
-import com.example.programmersnsandroidclient.viewmodel.SnsViewModel
+import com.example.programmersnsandroidclient.viewmodel.SnsUserViewModel
 import com.google.android.material.snackbar.Snackbar
 
 class UserProfileFragment : Fragment() {
-    private val snsViewModel: SnsViewModel by activityViewModels()
+    private val snsUserViewModel: SnsUserViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         val binding = FragmentUserProfileBinding.inflate(inflater, container, false)
-        binding.viewModel = snsViewModel
+        binding.viewModel = snsUserViewModel
         binding.lifecycleOwner = viewLifecycleOwner
 
         binding.editButton.setOnClickListener {

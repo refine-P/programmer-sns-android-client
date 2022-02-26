@@ -10,12 +10,12 @@ import com.example.programmersnsandroidclient.MainNavDirections
 import com.example.programmersnsandroidclient.R
 import com.example.programmersnsandroidclient.databinding.ActivityMainBinding
 import com.example.programmersnsandroidclient.databinding.DrawerHeaderBinding
-import com.example.programmersnsandroidclient.viewmodel.SnsViewModel
+import com.example.programmersnsandroidclient.viewmodel.SnsUserViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
-    private val snsViewModel: SnsViewModel by viewModels()
+    private val snsUserViewModel: SnsUserViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,7 +35,7 @@ class MainActivity : AppCompatActivity() {
 
         val userContentsMenu = activityMainBinding.navView.menu.findItem(R.id.user_contents)
         userContentsMenu.isEnabled = false
-        snsViewModel.currentUser.observe(this) { user ->
+        snsUserViewModel.currentUser.observe(this) { user ->
             userContentsMenu.isEnabled = true
             userContentsMenu.setOnMenuItemClickListener {
                 val action = MainNavDirections.actionUserProfile(user.id, user.name)
@@ -47,7 +47,7 @@ class MainActivity : AppCompatActivity() {
         val drawerHeaderBinding =
             DrawerHeaderBinding.inflate(layoutInflater, activityMainBinding.navView, false)
         drawerHeaderBinding.lifecycleOwner = this
-        drawerHeaderBinding.viewModel = snsViewModel
+        drawerHeaderBinding.viewModel = snsUserViewModel
 
         // app:headerLayout を NavigationView に追加しても動かないので、ここで動的に追加する
         // https://kcpoipoi.hatenablog.com/entry/2019/01/02/204840

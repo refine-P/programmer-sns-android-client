@@ -5,7 +5,7 @@
 
         <variable
             name="viewModel"
-            type="com.example.programmersnsandroidclient.viewmodel.SnsViewModel" />
+            type="com.example.programmersnsandroidclient.viewmodel.SnsUserViewModel" />
     </data>
 
     <LinearLayout

@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class SnsViewModel(
+class SnsUserViewModel(
     private val snsRepository: SnsRepository,
     private val dispatcher: CoroutineDispatcher
 ) : ViewModel() {
@@ -27,22 +27,12 @@ class SnsViewModel(
     private val _updateSuccessful = LiveEvent<Boolean>()
     val updateSuccessful: LiveData<Boolean> = _updateSuccessful
 
-    private val _sendSuccessful = LiveEvent<Boolean>()
-    val sendSuccessful: LiveData<Boolean> = _sendSuccessful
-
     private val _currentUser: MutableLiveData<SnsUser> = MutableLiveData()
     val currentUser: LiveData<SnsUser> = _currentUser
 
     init {
         snsRepository.loadCurrentUserId()?.let {
             updateCurrentUser(it)
-        }
-    }
-
-    fun sendSnsPost(content: String) {
-        viewModelScope.launch(dispatcher) {
-            val isSuccessful = snsRepository.sendSnsPost(content)
-            _sendSuccessful.postValue(isSuccessful)
         }
     }
 

@@ -8,30 +8,30 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.programmersnsandroidclient.databinding.FragmentEditUserProfileBinding
-import com.example.programmersnsandroidclient.viewmodel.SnsViewModel
+import com.example.programmersnsandroidclient.viewmodel.SnsUserViewModel
 
 class EditUserProfileFragment : Fragment() {
     companion object {
         const val UPDATE_SUCCESSFUL = "UPDATE_SUCCESSFUL"
     }
 
-    private val snsViewModel: SnsViewModel by activityViewModels()
+    private val snsUserViewModel: SnsUserViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         val binding = FragmentEditUserProfileBinding.inflate(inflater, container, false)
-        binding.viewModel = snsViewModel
+        binding.viewModel = snsUserViewModel
         binding.lifecycleOwner = viewLifecycleOwner
 
         val savedStateHandle = findNavController().previousBackStackEntry!!.savedStateHandle
         binding.updateButton.setOnClickListener {
-            snsViewModel.updateSuccessful.observe(viewLifecycleOwner) {
+            snsUserViewModel.updateSuccessful.observe(viewLifecycleOwner) {
                 savedStateHandle.set(UPDATE_SUCCESSFUL, it)
                 findNavController().popBackStack()
             }
-            snsViewModel.updateUserProfile(
+            snsUserViewModel.updateUserProfile(
                 binding.snsUserName.text.toString(),
                 binding.snsUserDiscription.text.toString()
             )
