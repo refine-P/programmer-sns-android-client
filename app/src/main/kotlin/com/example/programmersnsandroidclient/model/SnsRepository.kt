@@ -82,6 +82,7 @@ class SnsRepository(
         } else {
             service.fetchTimelineWithFilter(timelineNumLimit, "_user_id eq '%s'".format(userId))
         }
+
         val timelineInternal = res.body() ?: return null
         return timelineInternal.map {
             loadSnsPost(it)
@@ -96,10 +97,15 @@ class SnsRepository(
             postInternal._user_id.take(8) + " [未登録]"
         }
         val contentFromUnregisteredUser =
-            SnsContent(postInternal.id, unregisteredUserName, postInternal.text)
+            SnsContent(
+                postInternal.id,
+                postInternal._user_id,
+                unregisteredUserName,
+                postInternal.text
+            )
         val user = withContext(dispatcher) {
             userDao.getUser(postInternal._user_id)
         } ?: return contentFromUnregisteredUser
-        return SnsContent(postInternal.id, user.name, postInternal.text)
+        return SnsContent(postInternal.id, postInternal._user_id, user.name, postInternal.text)
     }
 }

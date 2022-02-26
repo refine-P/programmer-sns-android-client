@@ -1,13 +1,14 @@
 package com.example.programmersnsandroidclient.model
 
 data class SnsContent(
-    val id: String = "",
+    val contentId: String,
+    val userId: String,
     val userName: String,
     val content: String
 )
 
 data class SnsContentInternal(
-    val id: String = "",
+    val id: String,
     val text: String,
     val in_reply_to_user_id: String?,
     val in_reply_to_text_id: String?,

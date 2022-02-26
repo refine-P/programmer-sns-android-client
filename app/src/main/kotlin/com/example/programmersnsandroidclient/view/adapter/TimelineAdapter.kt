@@ -12,7 +12,7 @@ import com.example.programmersnsandroidclient.model.SnsContent
 
 private object DiffCallback : DiffUtil.ItemCallback<SnsContent>() {
     override fun areItemsTheSame(oldItem: SnsContent, newItem: SnsContent): Boolean {
-        return oldItem.id == newItem.id
+        return oldItem.contentId == newItem.contentId
     }
 
     override fun areContentsTheSame(oldItem: SnsContent, newItem: SnsContent): Boolean {
@@ -20,7 +20,9 @@ private object DiffCallback : DiffUtil.ItemCallback<SnsContent>() {
     }
 }
 
-class TimelineAdapter : ListAdapter<SnsContent, TimelineAdapter.ViewHolder>(DiffCallback) {
+class TimelineAdapter(
+    private val goToUserContentsFragment: (userId: String, userName: String) -> Unit
+) : ListAdapter<SnsContent, TimelineAdapter.ViewHolder>(DiffCallback) {
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val userName: TextView = view.findViewById(R.id.user_name)
         val content: TextView = view.findViewById(R.id.content)
@@ -42,5 +44,11 @@ class TimelineAdapter : ListAdapter<SnsContent, TimelineAdapter.ViewHolder>(Diff
         val snsContent = getItem(position)
         viewHolder.userName.text = snsContent.userName
         viewHolder.content.text = snsContent.content
+        viewHolder.userName.setOnClickListener {
+            goToUserContentsFragment(
+                snsContent.userId,
+                snsContent.userName
+            )
+        }
     }
 }

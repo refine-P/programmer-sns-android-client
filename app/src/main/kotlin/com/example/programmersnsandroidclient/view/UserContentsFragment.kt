@@ -33,7 +33,7 @@ class UserContentsFragment : Fragment() {
         binding.viewModel = snsUserContentsViewModel
         binding.lifecycleOwner = viewLifecycleOwner
 
-        val timelineAdapter = TimelineAdapter()
+        val timelineAdapter = TimelineAdapter { _, _ -> }
         val loadMoreAdapter =
             LoadMoreAdapter(viewLifecycleOwner, LoadMoreArgs(snsUserContentsViewModel.isLoading) {
                 snsUserContentsViewModel.loadMore()

@@ -90,7 +90,7 @@ class SnsRepositoryTest {
         verify(userDao, times(1)).insertUsers(dummyUsers)
         verify(userDao, times(1)).getUser(dummyCurrentUserId)
         val expected = listOf(
-            SnsContent("dummy_content_id", "dummy_name", "dummy_text")
+            SnsContent("dummy_content_id", "dummy_user_id", "dummy_name", "dummy_text")
         )
         assertEquals(expected, actual)
     }
@@ -147,8 +147,8 @@ class SnsRepositoryTest {
         verify(userDao, times(1)).getUser(dummyCurrentUserId)
         verify(userDao, times(1)).getUser(newUser.id)
         val expected = listOf(
-            SnsContent("dummy_content_id", "dummy_name", "dummy_text"),
-            SnsContent("dummy_content_id2", "dummy_name2", "dummy_text2")
+            SnsContent("dummy_content_id", "dummy_user_id", "dummy_name", "dummy_text"),
+            SnsContent("dummy_content_id2", "dummy_user_id2", "dummy_name2", "dummy_text2")
         )
         assertEquals(expected, actual)
     }
@@ -187,8 +187,8 @@ class SnsRepositoryTest {
         verify(userDao, times(1)).getUser(dummyCurrentUserId)
         verify(userDao, times(1)).getUser(newUser.id)
         val expected = listOf(
-            SnsContent("dummy_content_id", "dummy_name", "dummy_text"),
-            SnsContent("dummy_content_id2", "dummy_user_id2", "dummy_text2")
+            SnsContent("dummy_content_id", "dummy_user_id", "dummy_name", "dummy_text"),
+            SnsContent("dummy_content_id2", "dummy_user_id2", "dummy_user_id2", "dummy_text2")
         )
         assertEquals(expected, actual)
     }

@@ -10,6 +10,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.programmersnsandroidclient.MainNavDirections
 import com.example.programmersnsandroidclient.R
 import com.example.programmersnsandroidclient.databinding.FragmentTimelineBinding
 import com.example.programmersnsandroidclient.model.TimelineState
@@ -30,7 +31,10 @@ class TimelineFragment : Fragment() {
         binding.viewModel = snsViewModel
         binding.lifecycleOwner = viewLifecycleOwner
 
-        val timelineAdapter = TimelineAdapter()
+        val timelineAdapter = TimelineAdapter { userId, userName ->
+            val action = MainNavDirections.actionUserProfile(userId, userName)
+            findNavController().navigate(action)
+        }
         val loadMoreAdapter =
             LoadMoreAdapter(viewLifecycleOwner, LoadMoreArgs(snsViewModel.isLoading) {
                 snsViewModel.loadMore()

@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
+import com.example.programmersnsandroidclient.MainNavDirections
 import com.example.programmersnsandroidclient.R
 import com.example.programmersnsandroidclient.databinding.ActivityMainBinding
 import com.example.programmersnsandroidclient.databinding.DrawerHeaderBinding
@@ -34,8 +35,13 @@ class MainActivity : AppCompatActivity() {
 
         val userContentsMenu = activityMainBinding.navView.menu.findItem(R.id.user_contents)
         userContentsMenu.isEnabled = false
-        snsViewModel.currentUser.observe(this) {
+        snsViewModel.currentUser.observe(this) { user ->
             userContentsMenu.isEnabled = true
+            userContentsMenu.setOnMenuItemClickListener {
+                val action = MainNavDirections.actionUserProfile(user.id, user.name)
+                navController.navigate(action)
+                false  // false じゃないとドロワーが自動で閉じない
+            }
         }
 
         val drawerHeaderBinding =

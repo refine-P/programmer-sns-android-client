@@ -49,9 +49,8 @@ class SnsUserContentsViewModel(
     // TODO: viewmodelが引数を持てるようにする
     private lateinit var targetUserId: String
 
-    fun init(userId: String?) {
-        // userIdがnull = currentUserIdを指定
-        targetUserId = userId ?: snsRepository.loadCurrentUserId()!!
+    fun init(userId: String) {
+        targetUserId = userId
         loadTimeline(TimelineState.INIT)
     }
 

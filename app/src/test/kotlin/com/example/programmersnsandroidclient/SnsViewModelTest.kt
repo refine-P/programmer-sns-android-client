@@ -111,7 +111,7 @@ class SnsViewModelTest {
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
         val expected = listOf(
-            SnsContent("dummy_content_id", "dummy_name", "dummy_text")
+            SnsContent("dummy_content_id", "dummy_user_id", "dummy_name", "dummy_text")
         )
         assertEquals(dummyCurrentUser, viewmodel.currentUser.value)
         assertEquals(expected, viewmodel.timeline.value?.contents)
@@ -155,8 +155,8 @@ class SnsViewModelTest {
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
         val expectedBeforeRefresh = listOf(
-            SnsContent("dummy_content_id", "dummy_name", "dummy_text"),
-            SnsContent("dummy_content_id2", "dummy_user_id2", "dummy_text2")
+            SnsContent("dummy_content_id", "dummy_user_id", "dummy_name", "dummy_text"),
+            SnsContent("dummy_content_id2", "dummy_user_id2", "dummy_user_id2", "dummy_text2")
         )
         assertEquals(expectedBeforeRefresh, viewmodel.timeline.value?.contents)
 
@@ -168,8 +168,8 @@ class SnsViewModelTest {
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
         val expected = listOf(
-            SnsContent("dummy_content_id", "dummy_name", "dummy_text"),
-            SnsContent("dummy_content_id2", "dummy_name2", "dummy_text2")
+            SnsContent("dummy_content_id", "dummy_user_id", "dummy_name", "dummy_text"),
+            SnsContent("dummy_content_id2", "dummy_user_id2", "dummy_name2", "dummy_text2")
         )
         assertEquals(expected, viewmodel.timeline.value?.contents)
         assertEquals(TimelineState.REFRESH, viewmodel.timeline.value?.state)
@@ -194,8 +194,8 @@ class SnsViewModelTest {
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
         val expectedBeforeRefresh = listOf(
-            SnsContent("dummy_content_id", "dummy_name", "dummy_text"),
-            SnsContent("dummy_content_id2", "dummy_user_id2", "dummy_text2")
+            SnsContent("dummy_content_id", "dummy_user_id", "dummy_name", "dummy_text"),
+            SnsContent("dummy_content_id2", "dummy_user_id2", "dummy_user_id2", "dummy_text2")
         )
         assertEquals(expectedBeforeRefresh, viewmodel.timeline.value?.contents)
 
@@ -223,7 +223,7 @@ class SnsViewModelTest {
 
         viewmodel.loadMore()
         val expectedBeforeLoadMore = listOf(
-            SnsContent("dummy_content_id", "dummy_name", "dummy_text"),
+            SnsContent("dummy_content_id", "dummy_user_id", "dummy_name", "dummy_text"),
         )
         assertEquals(expectedBeforeLoadMore, viewmodel.timeline.value?.contents)
         assertEquals(true, viewmodel.isLoading.value)
@@ -231,8 +231,8 @@ class SnsViewModelTest {
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
         val expected = listOf(
-            SnsContent("dummy_content_id", "dummy_name", "dummy_text"),
-            SnsContent("dummy_content_id2", "dummy_name2", "dummy_text2")
+            SnsContent("dummy_content_id", "dummy_user_id", "dummy_name", "dummy_text"),
+            SnsContent("dummy_content_id2", "dummy_user_id2", "dummy_name2", "dummy_text2")
         )
         assertEquals(expected, viewmodel.timeline.value?.contents)
         assertEquals(TimelineState.LOAD_MORE, viewmodel.timeline.value?.state)
@@ -252,7 +252,7 @@ class SnsViewModelTest {
         setUpService(false)
         viewmodel.loadMore()
         val expectedBeforeLoadMore = listOf(
-            SnsContent("dummy_content_id", "dummy_name", "dummy_text"),
+            SnsContent("dummy_content_id", "dummy_user_id", "dummy_name", "dummy_text"),
         )
         assertEquals(expectedBeforeLoadMore, viewmodel.timeline.value?.contents)
         assertEquals(true, viewmodel.isLoading.value)
@@ -276,7 +276,7 @@ class SnsViewModelTest {
         val content = "dummy_text%s".format(dummyTimeline.size + 1)
         viewmodel.sendSnsPost(content)
         val expectedClientTimeline = listOf(
-            SnsContent("dummy_content_id", "dummy_name", "dummy_text"),
+            SnsContent("dummy_content_id", "dummy_user_id", "dummy_name", "dummy_text"),
         )
         assertEquals(expectedClientTimeline, viewmodel.timeline.value?.contents)
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
@@ -301,7 +301,7 @@ class SnsViewModelTest {
         val content = "dummy_text%s".format(dummyTimeline.size + 1)
         viewmodel.sendSnsPost(content)
         val expectedClientTimeline = listOf(
-            SnsContent("dummy_content_id", "dummy_name", "dummy_text"),
+            SnsContent("dummy_content_id", "dummy_user_id", "dummy_name", "dummy_text"),
         )
         assertEquals(expectedClientTimeline, viewmodel.timeline.value?.contents)
         Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
