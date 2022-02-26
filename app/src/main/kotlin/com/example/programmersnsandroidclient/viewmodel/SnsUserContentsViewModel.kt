@@ -70,10 +70,7 @@ class SnsUserContentsViewModel(
         isDoing.postValue(true)
 
         val shouldLoadMore = state == TimelineState.LOAD_MORE
-        val shouldRefreshUserCache = when (state) {
-            TimelineState.INIT, TimelineState.REFRESH -> true
-            else -> false
-        }
+        val shouldRefreshUserCache = false  // ユーザーのIDがgivenなら、UserCacheにそのIDは存在してるはず
         viewModelScope.launch(dispatcher) {
             val numLimit = if (shouldLoadMore) {
                 timelineNumLimit + incrementalTimelineNumLimit
