@@ -15,28 +15,35 @@ import com.example.programmersnsandroidclient.model.TimelineState
 import com.example.programmersnsandroidclient.view.adapter.LoadMoreAdapter
 import com.example.programmersnsandroidclient.view.adapter.LoadMoreArgs
 import com.example.programmersnsandroidclient.view.adapter.TimelineAdapter
-import com.example.programmersnsandroidclient.viewmodel.SnsUserContentsViewModel
+import com.example.programmersnsandroidclient.viewmodel.UserContentsViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class UserContentsFragment : Fragment() {
-    private val snsUserContentsViewModel: SnsUserContentsViewModel by viewModels()
+    @Inject
+    lateinit var assistedFactory: UserContentsViewModel.ViewModelAssistedFactory
+
     private val args: UserContentsFragmentArgs by navArgs()
+    private val userContentsViewModel: UserContentsViewModel by viewModels {
+        UserContentsViewModel.provideFactory(
+            assistedFactory,
+            args.userId
+        )
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        snsUserContentsViewModel.init(args.userId)
         val binding = FragmentUserContentsBinding.inflate(inflater, container, false)
-
-        binding.viewModel = snsUserContentsViewModel
+        binding.viewModel = userContentsViewModel
         binding.lifecycleOwner = viewLifecycleOwner
 
         val timelineAdapter = TimelineAdapter { _, _ -> }
         val loadMoreAdapter =
-            LoadMoreAdapter(viewLifecycleOwner, LoadMoreArgs(snsUserContentsViewModel.isLoading) {
-                snsUserContentsViewModel.loadMore()
+            LoadMoreAdapter(viewLifecycleOwner, LoadMoreArgs(userContentsViewModel.isLoading) {
+                userContentsViewModel.loadMore()
             })
 
         val recyclerView = binding.timeline
@@ -46,7 +53,7 @@ class UserContentsFragment : Fragment() {
         )
         recyclerView.adapter = ConcatAdapter(timelineAdapter, loadMoreAdapter)
 
-        snsUserContentsViewModel.timeline.observe(viewLifecycleOwner) { timeline ->
+        userContentsViewModel.timeline.observe(viewLifecycleOwner) { timeline ->
             // タイムラインのInit or Refresh時は最上部にスクロールする
             when (timeline.state) {
                 TimelineState.INIT, TimelineState.REFRESH -> {

@@ -5,9 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.programmersnsandroidclient.model.SnsRepository
-import com.example.programmersnsandroidclient.model.SnsTimeline
 import com.example.programmersnsandroidclient.model.SnsUser
-import com.example.programmersnsandroidclient.model.TimelineState
 import com.hadilq.liveevent.LiveEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -18,34 +16,13 @@ import javax.inject.Inject
 @HiltViewModel
 class SnsViewModel(
     private val snsRepository: SnsRepository,
-    initialTimelineNumLimit: Int,
-    private val incrementalTimelineNumLimit: Int,
     private val dispatcher: CoroutineDispatcher
 ) : ViewModel() {
     @Inject
     constructor(snsRepository: SnsRepository) : this(
         snsRepository,
-        DEFAULT_INITIAL_TIMELINE_NUM_LIMIT,
-        DEFAULT_INCREMENTAL_TINELINE_NUM_LIMIT,
         Dispatchers.IO
     )
-
-    // TODO: 定数用のファイルを作って、そこにこれを移動した方が良いかも？
-    companion object {
-        const val DEFAULT_INITIAL_TIMELINE_NUM_LIMIT: Int = 50
-        const val DEFAULT_INCREMENTAL_TINELINE_NUM_LIMIT: Int = 30
-    }
-
-    private var timelineNumLimit = initialTimelineNumLimit
-
-    private val _timeline: MutableLiveData<SnsTimeline> = MutableLiveData()
-    val timeline: LiveData<SnsTimeline> = _timeline
-
-    private val _isLoading: MutableLiveData<Boolean> = MutableLiveData(true)
-    val isLoading: LiveData<Boolean> = _isLoading
-
-    private val _isRefreshing: MutableLiveData<Boolean> = MutableLiveData(false)
-    val isRefreshing: LiveData<Boolean> = _isRefreshing
 
     private val _updateSuccessful = LiveEvent<Boolean>()
     val updateSuccessful: LiveData<Boolean> = _updateSuccessful
@@ -60,15 +37,6 @@ class SnsViewModel(
         snsRepository.loadCurrentUserId()?.let {
             updateCurrentUser(it)
         }
-        loadTimeline(TimelineState.INIT)
-    }
-
-    fun refresh() {
-        loadTimeline(TimelineState.REFRESH)
-    }
-
-    fun loadMore() {
-        loadTimeline(TimelineState.LOAD_MORE)
     }
 
     fun sendSnsPost(content: String) {
@@ -87,32 +55,6 @@ class SnsViewModel(
                 _currentUser.postValue(SnsUser(userId, name, description))
                 snsRepository.storeCurrentUserId(userId)
             }
-        }
-    }
-
-    private fun loadTimeline(state: TimelineState) {
-        val isDoing = when (state) {
-            TimelineState.REFRESH -> _isRefreshing
-            else -> _isLoading
-        }
-        isDoing.postValue(true)
-
-        val shouldLoadMore = state == TimelineState.LOAD_MORE
-        val shouldRefreshUserCache = when (state) {
-            TimelineState.INIT, TimelineState.REFRESH -> true
-            else -> false
-        }
-        viewModelScope.launch(dispatcher) {
-            val numLimit = if (shouldLoadMore) {
-                timelineNumLimit + incrementalTimelineNumLimit
-            } else {
-                timelineNumLimit
-            }
-            snsRepository.fetchTimeline(numLimit, shouldRefreshUserCache)?.let {
-                _timeline.postValue(SnsTimeline(it, state))
-                if (shouldLoadMore) timelineNumLimit = numLimit
-            }
-            isDoing.postValue(false)
         }
     }
 

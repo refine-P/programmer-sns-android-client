@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -17,18 +17,20 @@ import com.example.programmersnsandroidclient.model.TimelineState
 import com.example.programmersnsandroidclient.view.adapter.LoadMoreAdapter
 import com.example.programmersnsandroidclient.view.adapter.LoadMoreArgs
 import com.example.programmersnsandroidclient.view.adapter.TimelineAdapter
-import com.example.programmersnsandroidclient.viewmodel.SnsViewModel
+import com.example.programmersnsandroidclient.viewmodel.TimelineViewModel
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class TimelineFragment : Fragment() {
-    private val snsViewModel: SnsViewModel by activityViewModels()
+    private val timelineViewModel: TimelineViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         val binding = FragmentTimelineBinding.inflate(inflater, container, false)
-        binding.viewModel = snsViewModel
+        binding.viewModel = timelineViewModel
         binding.lifecycleOwner = viewLifecycleOwner
 
         val timelineAdapter = TimelineAdapter { userId, userName ->
@@ -36,8 +38,8 @@ class TimelineFragment : Fragment() {
             findNavController().navigate(action)
         }
         val loadMoreAdapter =
-            LoadMoreAdapter(viewLifecycleOwner, LoadMoreArgs(snsViewModel.isLoading) {
-                snsViewModel.loadMore()
+            LoadMoreAdapter(viewLifecycleOwner, LoadMoreArgs(timelineViewModel.isLoading) {
+                timelineViewModel.loadMore()
             })
 
         val recyclerView = binding.timeline
@@ -47,7 +49,7 @@ class TimelineFragment : Fragment() {
         )
         recyclerView.adapter = ConcatAdapter(timelineAdapter, loadMoreAdapter)
 
-        snsViewModel.timeline.observe(viewLifecycleOwner) { timeline ->
+        timelineViewModel.timeline.observe(viewLifecycleOwner) { timeline ->
             // タイムラインのInit or Refresh時は最上部にスクロールする
             when (timeline.state) {
                 TimelineState.INIT, TimelineState.REFRESH -> {
@@ -76,7 +78,7 @@ class TimelineFragment : Fragment() {
                 Snackbar.make(binding.sendSnackbar, message, Snackbar.LENGTH_SHORT).show()
 
                 // 投稿成功時はタイムラインをRefreshして、自分の投稿が確認できるようにする
-                if (it) snsViewModel.refresh()
+                if (it) timelineViewModel.refresh()
 
                 // 値を使うのは一回だけにしたいので、使ったら削除する
                 savedStateHandle.remove<Boolean>(SendSnsPostFragment.SEND_SUCCESSFUL)

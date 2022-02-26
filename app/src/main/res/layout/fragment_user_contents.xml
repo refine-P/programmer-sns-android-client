@@ -7,7 +7,7 @@
 
         <variable
             name="viewModel"
-            type="com.example.programmersnsandroidclient.viewmodel.SnsUserContentsViewModel" />
+            type="com.example.programmersnsandroidclient.viewmodel.UserContentsViewModel" />
     </data>
 
     <RelativeLayout
