@@ -16,12 +16,14 @@ import javax.inject.Inject
 @HiltViewModel
 class SnsUserViewModel(
     private val snsRepository: SnsRepository,
-    private val dispatcher: CoroutineDispatcher
+    private val dispatcher: CoroutineDispatcher,
+    willInitializeManually: Boolean,  // テスト用フラグ。テストでは手動で初期化関数を走らせたい。
 ) : ViewModel() {
     @Inject
     constructor(snsRepository: SnsRepository) : this(
         snsRepository,
-        Dispatchers.IO
+        Dispatchers.IO,
+        false
     )
 
     private val _updateSuccessful = LiveEvent<Boolean>()
@@ -31,28 +33,28 @@ class SnsUserViewModel(
     val currentUser: LiveData<SnsUser> = _currentUser
 
     init {
+        if (!willInitializeManually) init()
+    }
+
+    fun init() = viewModelScope.launch(dispatcher) {
         snsRepository.loadCurrentUserId()?.let {
             updateCurrentUser(it)
         }
     }
 
-    fun updateUserProfile(name: String, description: String) {
-        viewModelScope.launch(dispatcher) {
-            val userId = snsRepository.updateUser(name, description)
-            val isSuccessful = userId != null
-            _updateSuccessful.postValue(isSuccessful)
-            if (userId != null) {  // ここを isSuccessful に置き換えるとエラーが出る
-                _currentUser.postValue(SnsUser(userId, name, description))
-                snsRepository.storeCurrentUserId(userId)
-            }
+    fun updateUserProfile(name: String, description: String) = viewModelScope.launch(dispatcher) {
+        val userId = snsRepository.updateUser(name, description)
+        val isSuccessful = userId != null
+        _updateSuccessful.postValue(isSuccessful)
+        if (userId != null) {  // ここを isSuccessful に置き換えるとエラーが出る
+            _currentUser.postValue(SnsUser(userId, name, description))
+            snsRepository.storeCurrentUserId(userId)
         }
     }
 
-    private fun updateCurrentUser(userId: String) {
-        viewModelScope.launch(dispatcher) {
-            snsRepository.fetchUser(userId)?.let {
-                _currentUser.postValue(it)
-            }
+    private suspend fun updateCurrentUser(userId: String) {
+        snsRepository.fetchUser(userId)?.let {
+            _currentUser.postValue(it)
         }
     }
 }

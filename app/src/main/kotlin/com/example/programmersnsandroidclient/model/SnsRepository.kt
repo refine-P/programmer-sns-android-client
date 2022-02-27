@@ -62,7 +62,7 @@ class SnsRepository(
         prefs.edit().putString("user_id", id).apply()
     }
 
-    private suspend fun refreshUserCache() {
+    suspend fun refreshUserCache() {
         withContext(dispatcher) {
             service.fetchAllUsers().body()?.let {
                 userDao.insertUsers(it)

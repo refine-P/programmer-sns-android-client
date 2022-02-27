@@ -8,6 +8,7 @@ import com.example.programmersnsandroidclient.viewmodel.SendSnsPostViewModel
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -21,19 +22,13 @@ import retrofit2.mock.MockRetrofit
 import retrofit2.mock.NetworkBehavior
 import java.util.concurrent.TimeUnit
 
+// TODO: kotlinx-coroutines-test を使った実装にする
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [30])
 class SendSnsPostViewModelTest {
     // LiveDataをテストするために必要
     @get:Rule
     val instantTaskExecutorRule = InstantTaskExecutorRule()
-
-    companion object {
-        // LiveDataを更新する際にsleepで待機する時間の長さ（ミリ秒）。
-        // LiveDataの更新前にassertが実行されてしまうのを防ぐためにsleepで対処する。
-        // TODO: sleepを使うのはあまり良い方法ではなさそうなので、より賢い方法を探す。
-        private const val DELAY_FOR_LIVEDATA_MILLIS: Long = 300
-    }
 
     private val retrofit = Retrofit.Builder()
         .baseUrl("https://versatileapi.herokuapp.com/api/")
@@ -97,19 +92,18 @@ class SendSnsPostViewModelTest {
     }
 
     @Test
-    fun sendSnsPost_success() {
+    fun sendSnsPost_success() = runBlocking {
         setUpService(true)
         setUpUserDao()
 
         val content = "dummy_text%s".format(dummyTimeline.size + 1)
-        viewmodel.sendSnsPost(content)
-        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
+        viewmodel.sendSnsPost(content).join()
 
         assertEquals(true, viewmodel.sendSuccessful.value)
     }
 
     @Test
-    fun sendSnsPost_failure() {
+    fun sendSnsPost_failure() = runBlocking {
         // viewmodel の初期化は成功させる
         setUpService(true)
         setUpUserDao()
@@ -117,8 +111,7 @@ class SendSnsPostViewModelTest {
         // それ以降は失敗
         setUpService(false)
         val content = "dummy_text%s".format(dummyTimeline.size + 1)
-        viewmodel.sendSnsPost(content)
-        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
+        viewmodel.sendSnsPost(content).join()
 
         assertEquals(false, viewmodel.sendSuccessful.value)
     }

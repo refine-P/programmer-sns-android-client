@@ -8,6 +8,7 @@ import com.example.programmersnsandroidclient.viewmodel.SnsUserViewModel
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Rule
@@ -23,19 +24,13 @@ import retrofit2.mock.MockRetrofit
 import retrofit2.mock.NetworkBehavior
 import java.util.concurrent.TimeUnit
 
+// TODO: kotlinx-coroutines-test を使った実装にする
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [30])
 class SnsUserViewModelTest {
     // LiveDataをテストするために必要
     @get:Rule
     val instantTaskExecutorRule = InstantTaskExecutorRule()
-
-    companion object {
-        // LiveDataを更新する際にsleepで待機する時間の長さ（ミリ秒）。
-        // LiveDataの更新前にassertが実行されてしまうのを防ぐためにsleepで対処する。
-        // TODO: sleepを使うのはあまり良い方法ではなさそうなので、より賢い方法を探す。
-        private const val DELAY_FOR_LIVEDATA_MILLIS: Long = 300
-    }
 
     private val retrofit = Retrofit.Builder()
         .baseUrl("https://versatileapi.herokuapp.com/api/")
@@ -61,7 +56,6 @@ class SnsUserViewModelTest {
             Dispatchers.IO
         )
 
-    private lateinit var viewmodel: SnsUserViewModel
     private val dummyTimeline = listOf(
         SnsContentInternal("dummy_content_id", "dummy_text", null, null, "dummy_user_id", "", ""),
         SnsContentInternal("dummy_content_id2", "dummy_text2", null, null, "dummy_user_id2", "", "")
@@ -99,59 +93,59 @@ class SnsUserViewModelTest {
     }
 
     @Test
-    fun init_success() {
+    fun init_success() = runBlocking {
         setUpService(true)
         setUpUserDao()
         repository.storeCurrentUserId(dummyCurrentUserId)
 
-        viewmodel = SnsUserViewModel(repository, Dispatchers.IO)
-        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
+        val viewmodel = SnsUserViewModel(repository, Dispatchers.IO, true)
+        viewmodel.init().join()
 
         assertEquals(dummyCurrentUser, viewmodel.currentUser.value)
     }
 
     @Test
-    fun init_failure() {
+    fun init_failure() = runBlocking {
         setUpService(false)
         setUpUserDao()
         repository.storeCurrentUserId(dummyCurrentUserId)
 
-        viewmodel = SnsUserViewModel(repository, Dispatchers.IO)
-        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
+        val viewmodel = SnsUserViewModel(repository, Dispatchers.IO, true)
+        viewmodel.init().join()
 
         assertNull(viewmodel.currentUser.value)
     }
 
     @Test
-    fun updateUserProfile_success() {
+    fun updateUserProfile_success() = runBlocking {
         setUpService(true)
         setUpUserDao()
 
-        viewmodel = SnsUserViewModel(repository, Dispatchers.IO)
-        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
+        val viewmodel = SnsUserViewModel(repository, Dispatchers.IO, true)
+        viewmodel.init().join()
 
         assertNull(repository.loadCurrentUserId())
 
         val name = "dummy_name%s".format(dummyUsers.size + 1)
         val description = "dummy_text%s".format(dummyUsers.size + 1)
-        viewmodel.updateUserProfile(name, description)
+
+        assertNull(viewmodel.currentUser.value)
+
+        viewmodel.updateUserProfile(name, description).join()
 
         val expected = SnsUser(dummyCurrentUserId, name, description)
-        assertNull(viewmodel.currentUser.value)
-        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
-
         assertEquals(expected, viewmodel.currentUser.value)
         assertEquals(true, viewmodel.updateSuccessful.value)
         assertEquals(expected.id, repository.loadCurrentUserId())
     }
 
     @Test
-    fun updateUserProfile_failure() {
+    fun updateUserProfile_failure() = runBlocking {
         // viewmodel の初期化は成功させる
         setUpService(true)
         setUpUserDao()
-        viewmodel = SnsUserViewModel(repository, Dispatchers.IO)
-        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
+        val viewmodel = SnsUserViewModel(repository, Dispatchers.IO, true)
+        viewmodel.init().join()
 
         assertNull(repository.loadCurrentUserId())
 
@@ -159,10 +153,10 @@ class SnsUserViewModelTest {
         setUpService(false)
         val name = "dummy_name%s".format(dummyUsers.size + 1)
         val description = "dummy_text%s".format(dummyUsers.size + 1)
-        viewmodel.updateUserProfile(name, description)
 
         assertNull(viewmodel.currentUser.value)
-        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
+
+        viewmodel.updateUserProfile(name, description).join()
 
         assertNull(viewmodel.currentUser.value)
         assertEquals(false, viewmodel.updateSuccessful.value)

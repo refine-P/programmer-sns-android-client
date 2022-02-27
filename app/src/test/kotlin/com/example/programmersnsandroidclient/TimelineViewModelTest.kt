@@ -8,13 +8,13 @@ import com.example.programmersnsandroidclient.viewmodel.TimelineViewModel
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mockito.`when`
-import org.mockito.Mockito.mock
+import org.mockito.Mockito.*
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import retrofit2.Retrofit
@@ -23,19 +23,13 @@ import retrofit2.mock.MockRetrofit
 import retrofit2.mock.NetworkBehavior
 import java.util.concurrent.TimeUnit
 
+// TODO: kotlinx-coroutines-test を使った実装にする
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [30])
 class TimelineViewModelTest {
     // LiveDataをテストするために必要
     @get:Rule
     val instantTaskExecutorRule = InstantTaskExecutorRule()
-
-    companion object {
-        // LiveDataを更新する際にsleepで待機する時間の長さ（ミリ秒）。
-        // LiveDataの更新前にassertが実行されてしまうのを防ぐためにsleepで対処する。
-        // TODO: sleepを使うのはあまり良い方法ではなさそうなので、より賢い方法を探す。
-        private const val DELAY_FOR_LIVEDATA_MILLIS: Long = 300
-    }
 
     private val retrofit = Retrofit.Builder()
         .baseUrl("https://versatileapi.herokuapp.com/api/")
@@ -53,15 +47,16 @@ class TimelineViewModelTest {
     private val appContext = ApplicationProvider.getApplicationContext<Context>()
     private val userDao = mock(UserDao::class.java)
     private val repository =
-        SnsRepository(
-            service,
-            appContext,
-            userDao,
-            shouldUseFullIdAsUnregisteredUserName = true,
-            Dispatchers.IO
+        spy(
+            SnsRepository(
+                service,
+                appContext,
+                userDao,
+                shouldUseFullIdAsUnregisteredUserName = true,
+                Dispatchers.IO
+            )
         )
 
-    private lateinit var viewmodel: TimelineViewModel
     private val dummyTimeline = listOf(
         SnsContentInternal("dummy_content_id", "dummy_text", null, null, "dummy_user_id", "", ""),
         SnsContentInternal("dummy_content_id2", "dummy_text2", null, null, "dummy_user_id2", "", "")
@@ -92,24 +87,30 @@ class TimelineViewModelTest {
         service.currentUserId = dummyCurrentUserId
     }
 
-    private fun setUpUserDao(userNum: Int = dummyUsers.size) {
-        for (user in dummyUsers.take(userNum)) {
-            `when`(userDao.getUser(user.id)).thenReturn(user)
+    private suspend fun setUpUserCache(userNum: Int = dummyUsers.size) {
+        `when`(repository.refreshUserCache()).then {
+            for (user in dummyUsers.take(userNum)) {
+                `when`(userDao.getUser(user.id)).thenReturn(user)
+            }
         }
     }
 
     @Test
-    fun init_success() {
+    fun init_success() = runBlocking {
         setUpService(true)
-        setUpUserDao()
-        repository.storeCurrentUserId(dummyCurrentUserId)
+        setUpUserCache()
 
-        viewmodel = TimelineViewModel(repository, 1, 1, Dispatchers.IO)
+        val viewmodel = TimelineViewModel(repository, 1, 1, Dispatchers.IO, true)
+        val job = viewmodel.init()
+
+        // 初期化処理の直前の状態
         assertNull(viewmodel.timeline.value)
         assertEquals(true, viewmodel.isLoading.value)
         assertEquals(false, viewmodel.isRefreshing.value)
-        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
+        job.join()
+
+        // 初期化処理完了時の状態
         val expected = listOf(
             SnsContent("dummy_content_id", "dummy_user_id", "dummy_name", "dummy_text")
         )
@@ -120,51 +121,57 @@ class TimelineViewModelTest {
     }
 
     @Test
-    fun init_failure() {
+    fun init_failure() = runBlocking {
         setUpService(false)
-        setUpUserDao()
-        repository.storeCurrentUserId(dummyCurrentUserId)
+        setUpUserCache()
 
-        viewmodel = TimelineViewModel(repository, 1, 1, Dispatchers.IO)
+        val viewmodel = TimelineViewModel(repository, 1, 1, Dispatchers.IO, true)
+        val job = viewmodel.init()
+
+        // 初期化処理の直前の状態
         assertNull(viewmodel.timeline.value)
         assertEquals(true, viewmodel.isLoading.value)
         assertEquals(false, viewmodel.isRefreshing.value)
-        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
+        job.join()
+
+        // 初期化処理完了時の状態
         assertNull(viewmodel.timeline.value)
         assertEquals(false, viewmodel.isLoading.value)
         assertEquals(false, viewmodel.isRefreshing.value)
     }
 
     @Test
-    fun refresh_success() {
+    fun refresh_success() = runBlocking {
         // 開始時点ではユーザーの情報は1人分しか読み込まれないようにする。
         // viewmodelを初期化した時点でユーザーの情報が読み込まれる。
         setUpService(true, 1)
-        setUpUserDao(1)
-        viewmodel = TimelineViewModel(repository, 1, 1, Dispatchers.IO)
-        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
+        setUpUserCache(1)
+        val viewmodel = TimelineViewModel(repository, 1, 1, Dispatchers.IO, true)
+        viewmodel.init().join()
 
         // ユーザーの情報が読み込まれた後で、ユーザーの情報を増やす。
         // refreshしない場合、読み込まれてないユーザーは未登録ユーザーとして扱われる。
         // loadMoreを実行することで、投稿の数の上限を2にする。
         setUpService(true)
-        viewmodel.loadMore()
-        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
+        viewmodel.loadMore().join()
 
+        // refreshすると、ユーザーの情報および投稿がすべて読み込まれる。
+        setUpUserCache()  // ユーザーが読み込まれるタイミングで UserCache を更新
+        val job = viewmodel.refresh()
+
+        // refresh直前の状態
         val expectedBeforeRefresh = listOf(
             SnsContent("dummy_content_id", "dummy_user_id", "dummy_name", "dummy_text"),
             SnsContent("dummy_content_id2", "dummy_user_id2", "dummy_user_id2", "dummy_text2")
         )
         assertEquals(expectedBeforeRefresh, viewmodel.timeline.value?.contents)
-
-        // refreshすると、ユーザーの情報および投稿がすべて読み込まれる。
-        setUpUserDao()  // ユーザーが読み込まれるタイミングで UserDao を更新
-        viewmodel.refresh()
         assertEquals(false, viewmodel.isLoading.value)
         assertEquals(true, viewmodel.isRefreshing.value)
-        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
+        job.join()
+
+        // refresh完了時の状態
         val expected = listOf(
             SnsContent("dummy_content_id", "dummy_user_id", "dummy_name", "dummy_text"),
             SnsContent("dummy_content_id2", "dummy_user_id2", "dummy_name2", "dummy_text2")
@@ -176,35 +183,37 @@ class TimelineViewModelTest {
     }
 
     @Test
-    fun refresh_failure() {
+    fun refresh_failure() = runBlocking {
         // 開始時点ではユーザーの情報は1人分しか読み込まれないようにする。
         // viewmodelを初期化した時点でユーザーの情報が読み込まれる。
         setUpService(true, 1)
-        setUpUserDao(1)
-        viewmodel = TimelineViewModel(repository, 1, 1, Dispatchers.IO)
-        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
+        setUpUserCache(1)
+        val viewmodel = TimelineViewModel(repository, 1, 1, Dispatchers.IO, true)
+        viewmodel.init().join()
 
         // ユーザーの情報が読み込まれた後で、ユーザーの情報を増やす。
         // refreshしない場合、読み込まれてないユーザーは未登録ユーザーとして扱われる。
         // loadMoreを実行することで、投稿の数の上限を2にする。
         setUpService(true)
-        viewmodel.loadMore()
-        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
+        viewmodel.loadMore().join()
 
+        // refreshを失敗させる。タイムラインはrefresh前のまま。
+        setUpService(false)
+        setUpUserCache()  // refresh のタイミングで UserCache を更新
+        val job = viewmodel.refresh()
+
+        // refresh直前の状態
         val expectedBeforeRefresh = listOf(
             SnsContent("dummy_content_id", "dummy_user_id", "dummy_name", "dummy_text"),
             SnsContent("dummy_content_id2", "dummy_user_id2", "dummy_user_id2", "dummy_text2")
         )
         assertEquals(expectedBeforeRefresh, viewmodel.timeline.value?.contents)
-
-        // refreshを失敗させる。タイムラインはrefresh前のまま。
-        setUpService(false)
-        setUpUserDao()  // refresh のタイミングで UserDao を更新
-        viewmodel.refresh()
         assertEquals(false, viewmodel.isLoading.value)
         assertEquals(true, viewmodel.isRefreshing.value)
-        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
+        job.join()
+
+        // refresh完了時の状態
         assertEquals(expectedBeforeRefresh, viewmodel.timeline.value?.contents)
         assertEquals(TimelineState.LOAD_MORE, viewmodel.timeline.value?.state)
         assertEquals(false, viewmodel.isLoading.value)
@@ -212,22 +221,25 @@ class TimelineViewModelTest {
     }
 
     @Test
-    fun loadmore_success() {
+    fun loadmore_success() = runBlocking {
         setUpService(true)
-        setUpUserDao()
+        setUpUserCache()
+        val viewmodel = TimelineViewModel(repository, 1, 1, Dispatchers.IO, true)
+        viewmodel.init().join()
 
-        viewmodel = TimelineViewModel(repository, 1, 1, Dispatchers.IO)
-        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
+        val job = viewmodel.loadMore()
 
-        viewmodel.loadMore()
+        // loadMore直前の状態
         val expectedBeforeLoadMore = listOf(
             SnsContent("dummy_content_id", "dummy_user_id", "dummy_name", "dummy_text"),
         )
         assertEquals(expectedBeforeLoadMore, viewmodel.timeline.value?.contents)
         assertEquals(true, viewmodel.isLoading.value)
         assertEquals(false, viewmodel.isRefreshing.value)
-        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
+        job.join()
+
+        // loadMore完了時の状態
         val expected = listOf(
             SnsContent("dummy_content_id", "dummy_user_id", "dummy_name", "dummy_text"),
             SnsContent("dummy_content_id2", "dummy_user_id2", "dummy_name2", "dummy_text2")
@@ -239,24 +251,29 @@ class TimelineViewModelTest {
     }
 
     @Test
-    fun loadmore_failure() {
+    fun loadmore_failure() = runBlocking {
         // viewmodel の初期化は成功させる
         setUpService(true)
-        setUpUserDao()
-        viewmodel = TimelineViewModel(repository, 1, 1, Dispatchers.IO)
-        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
+        setUpUserCache()
+        val viewmodel = TimelineViewModel(repository, 1, 1, Dispatchers.IO, true)
+        viewmodel.init().join()
 
         // それ以降は失敗
         setUpService(false)
-        viewmodel.loadMore()
+
+        val job = viewmodel.loadMore()
+
+        // loadMore直前の状態
         val expectedBeforeLoadMore = listOf(
             SnsContent("dummy_content_id", "dummy_user_id", "dummy_name", "dummy_text"),
         )
         assertEquals(expectedBeforeLoadMore, viewmodel.timeline.value?.contents)
         assertEquals(true, viewmodel.isLoading.value)
         assertEquals(false, viewmodel.isRefreshing.value)
-        Thread.sleep(DELAY_FOR_LIVEDATA_MILLIS)
 
+        job.join()
+
+        // loadMore完了時の状態
         assertEquals(expectedBeforeLoadMore, viewmodel.timeline.value?.contents)
         assertEquals(TimelineState.INIT, viewmodel.timeline.value?.state)
         assertEquals(false, viewmodel.isLoading.value)

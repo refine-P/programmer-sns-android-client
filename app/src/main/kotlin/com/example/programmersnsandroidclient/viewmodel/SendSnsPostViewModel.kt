@@ -25,10 +25,8 @@ class SendSnsPostViewModel(
     private val _sendSuccessful = LiveEvent<Boolean>()
     val sendSuccessful: LiveData<Boolean> = _sendSuccessful
 
-    fun sendSnsPost(content: String) {
-        viewModelScope.launch(dispatcher) {
-            val isSuccessful = snsRepository.sendSnsPost(content)
-            _sendSuccessful.postValue(isSuccessful)
-        }
+    fun sendSnsPost(content: String) = viewModelScope.launch(dispatcher) {
+        val isSuccessful = snsRepository.sendSnsPost(content)
+        _sendSuccessful.postValue(isSuccessful)
     }
 }

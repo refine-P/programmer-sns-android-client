@@ -17,7 +17,13 @@ class UserContentsViewModel(
     initialTimelineNumLimit: Int,
     incrementalTimelineNumLimit: Int,
     dispatcher: CoroutineDispatcher,
-) : AbstractContentsViewModel(initialTimelineNumLimit, incrementalTimelineNumLimit, dispatcher) {
+    willInitializeManually: Boolean
+) : AbstractContentsViewModel(
+    initialTimelineNumLimit,
+    incrementalTimelineNumLimit,
+    dispatcher,
+    willInitializeManually
+) {
     @AssistedInject
     constructor(
         snsRepository: SnsRepository,
@@ -27,7 +33,8 @@ class UserContentsViewModel(
         targetUserId,
         DEFAULT_INITIAL_TIMELINE_NUM_LIMIT,
         DEFAULT_INCREMENTAL_TINELINE_NUM_LIMIT,
-        Dispatchers.IO
+        Dispatchers.IO,
+        false
     )
 
     override fun getShouldRefreshUserCache(state: TimelineState): Boolean {

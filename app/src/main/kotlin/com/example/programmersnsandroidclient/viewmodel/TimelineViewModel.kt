@@ -14,18 +14,27 @@ class TimelineViewModel(
     initialTimelineNumLimit: Int,
     incrementalTimelineNumLimit: Int,
     dispatcher: CoroutineDispatcher,
-) : AbstractContentsViewModel(initialTimelineNumLimit, incrementalTimelineNumLimit, dispatcher) {
+    willInitializeManually: Boolean
+) : AbstractContentsViewModel(
+    initialTimelineNumLimit,
+    incrementalTimelineNumLimit,
+    dispatcher,
+    willInitializeManually
+) {
     @Inject
     constructor(snsRepository: SnsRepository) : this(
         snsRepository,
         DEFAULT_INITIAL_TIMELINE_NUM_LIMIT,
         DEFAULT_INCREMENTAL_TINELINE_NUM_LIMIT,
-        Dispatchers.IO
+        Dispatchers.IO,
+        false
     )
 
     override fun getShouldRefreshUserCache(state: TimelineState): Boolean {
-        // ユーザーのIDがgivenなら、UserCacheにそのIDは存在してるはず
-        return false
+        return when (state) {
+            TimelineState.INIT, TimelineState.REFRESH -> true
+            else -> false
+        }
     }
 
     override suspend fun fetchContents(

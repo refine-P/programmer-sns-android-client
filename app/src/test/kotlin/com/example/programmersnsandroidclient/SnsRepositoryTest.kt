@@ -19,6 +19,7 @@ import retrofit2.mock.MockRetrofit
 import retrofit2.mock.NetworkBehavior
 import java.util.concurrent.TimeUnit
 
+// TODO: kotlinx-coroutines-test を使った実装にする
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [30])
 class SnsRepositoryTest {

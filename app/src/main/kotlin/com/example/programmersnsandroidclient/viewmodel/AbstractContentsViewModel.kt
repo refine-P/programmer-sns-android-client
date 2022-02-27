@@ -8,12 +8,14 @@ import com.example.programmersnsandroidclient.model.SnsContent
 import com.example.programmersnsandroidclient.model.SnsTimeline
 import com.example.programmersnsandroidclient.model.TimelineState
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 abstract class AbstractContentsViewModel(
     initialTimelineNumLimit: Int,
     private val incrementalTimelineNumLimit: Int,
     private val dispatcher: CoroutineDispatcher,
+    willInitializeManually: Boolean,  // テスト用フラグ。テストでは手動で初期化関数を走らせたい。
 ) : ViewModel() {
     // TODO: 定数用のファイルを作って、そこにこれを移動した方が良いかも？
     companion object {
@@ -33,15 +35,19 @@ abstract class AbstractContentsViewModel(
     val isRefreshing: LiveData<Boolean> = _isRefreshing
 
     init {
-        loadTimeline(TimelineState.INIT)
+        if (!willInitializeManually) init()
     }
 
-    fun refresh() {
-        loadTimeline(TimelineState.REFRESH)
+    fun init(): Job {
+        return loadTimeline(TimelineState.INIT)
     }
 
-    fun loadMore() {
-        loadTimeline(TimelineState.LOAD_MORE)
+    fun refresh(): Job {
+        return loadTimeline(TimelineState.REFRESH)
+    }
+
+    fun loadMore(): Job {
+        return loadTimeline(TimelineState.LOAD_MORE)
     }
 
     protected abstract fun getShouldRefreshUserCache(state: TimelineState): Boolean
@@ -50,7 +56,7 @@ abstract class AbstractContentsViewModel(
         shouldRefreshUserCache: Boolean
     ): List<SnsContent>?
 
-    private fun loadTimeline(state: TimelineState) {
+    private fun loadTimeline(state: TimelineState): Job {
         val isDoing = when (state) {
             TimelineState.REFRESH -> _isRefreshing
             else -> _isLoading
@@ -59,12 +65,12 @@ abstract class AbstractContentsViewModel(
 
         val shouldLoadMore = state == TimelineState.LOAD_MORE
         val shouldRefreshUserCache = getShouldRefreshUserCache(state)
-        viewModelScope.launch(dispatcher) {
-            val numLimit = if (shouldLoadMore) {
-                timelineNumLimit + incrementalTimelineNumLimit
-            } else {
-                timelineNumLimit
-            }
+        val numLimit = if (shouldLoadMore) {
+            timelineNumLimit + incrementalTimelineNumLimit
+        } else {
+            timelineNumLimit
+        }
+        return viewModelScope.launch(dispatcher) {
             fetchContents(numLimit, shouldRefreshUserCache)?.let {
                 _timeline.postValue(SnsTimeline(it, state))
                 if (shouldLoadMore) timelineNumLimit = numLimit
