@@ -19,7 +19,9 @@ class MockVersatileApi(
         limit: Int,
         filter: String
     ): Response<List<SnsContentInternal>> {
-        TODO("Not yet implemented")
+        val userId: String = filter.removePrefix("_user_id eq ").removeSurrounding("'")
+        return delegate.returningResponse(allTimeline.filter { it._user_id == userId }.take(limit))
+            .fetchTimelineWithFilter(limit, filter)
     }
 
     override suspend fun fetchUser(userId: String): Response<SnsUser> {
