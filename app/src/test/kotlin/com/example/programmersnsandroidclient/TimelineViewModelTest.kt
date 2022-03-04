@@ -7,8 +7,9 @@ import com.example.programmersnsandroidclient.model.*
 import com.example.programmersnsandroidclient.viewmodel.TimelineViewModel
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Rule
@@ -23,7 +24,7 @@ import retrofit2.mock.MockRetrofit
 import retrofit2.mock.NetworkBehavior
 import java.util.concurrent.TimeUnit
 
-// TODO: kotlinx-coroutines-test を使った実装にする
+@ExperimentalCoroutinesApi
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [30])
 class TimelineViewModelTest {
@@ -46,6 +47,7 @@ class TimelineViewModelTest {
 
     private val appContext = ApplicationProvider.getApplicationContext<Context>()
     private val userDao = mock(UserDao::class.java)
+    private val dispatcher = StandardTestDispatcher()
     private val repository =
         spy(
             SnsRepository(
@@ -53,7 +55,7 @@ class TimelineViewModelTest {
                 appContext,
                 userDao,
                 shouldUseFullIdAsUnregisteredUserName = true,
-                Dispatchers.IO
+                dispatcher
             )
         )
 
@@ -96,11 +98,11 @@ class TimelineViewModelTest {
     }
 
     @Test
-    fun init_success() = runBlocking {
+    fun init_success() = runTest(dispatcher) {
         setUpService(true)
         setUpUserCache()
 
-        val viewmodel = TimelineViewModel(repository, 1, 1, Dispatchers.IO, true)
+        val viewmodel = TimelineViewModel(repository, 1, 1, dispatcher, true)
         val job = viewmodel.init()
 
         // 初期化処理の直前の状態
@@ -121,11 +123,11 @@ class TimelineViewModelTest {
     }
 
     @Test
-    fun init_failure() = runBlocking {
+    fun init_failure() = runTest(dispatcher) {
         setUpService(false)
         setUpUserCache()
 
-        val viewmodel = TimelineViewModel(repository, 1, 1, Dispatchers.IO, true)
+        val viewmodel = TimelineViewModel(repository, 1, 1, dispatcher, true)
         val job = viewmodel.init()
 
         // 初期化処理の直前の状態
@@ -142,12 +144,12 @@ class TimelineViewModelTest {
     }
 
     @Test
-    fun refresh_success() = runBlocking {
+    fun refresh_success() = runTest(dispatcher) {
         // 開始時点ではユーザーの情報は1人分しか読み込まれないようにする。
         // viewmodelを初期化した時点でユーザーの情報が読み込まれる。
         setUpService(true, 1)
         setUpUserCache(1)
-        val viewmodel = TimelineViewModel(repository, 1, 1, Dispatchers.IO, true)
+        val viewmodel = TimelineViewModel(repository, 1, 1, dispatcher, true)
         viewmodel.init().join()
 
         // ユーザーの情報が読み込まれた後で、ユーザーの情報を増やす。
@@ -183,12 +185,12 @@ class TimelineViewModelTest {
     }
 
     @Test
-    fun refresh_failure() = runBlocking {
+    fun refresh_failure() = runTest(dispatcher) {
         // 開始時点ではユーザーの情報は1人分しか読み込まれないようにする。
         // viewmodelを初期化した時点でユーザーの情報が読み込まれる。
         setUpService(true, 1)
         setUpUserCache(1)
-        val viewmodel = TimelineViewModel(repository, 1, 1, Dispatchers.IO, true)
+        val viewmodel = TimelineViewModel(repository, 1, 1, dispatcher, true)
         viewmodel.init().join()
 
         // ユーザーの情報が読み込まれた後で、ユーザーの情報を増やす。
@@ -221,10 +223,10 @@ class TimelineViewModelTest {
     }
 
     @Test
-    fun loadmore_success() = runBlocking {
+    fun loadmore_success() = runTest(dispatcher) {
         setUpService(true)
         setUpUserCache()
-        val viewmodel = TimelineViewModel(repository, 1, 1, Dispatchers.IO, true)
+        val viewmodel = TimelineViewModel(repository, 1, 1, dispatcher, true)
         viewmodel.init().join()
 
         val job = viewmodel.loadMore()
@@ -251,11 +253,11 @@ class TimelineViewModelTest {
     }
 
     @Test
-    fun loadmore_failure() = runBlocking {
+    fun loadmore_failure() = runTest(dispatcher) {
         // viewmodel の初期化は成功させる
         setUpService(true)
         setUpUserCache()
-        val viewmodel = TimelineViewModel(repository, 1, 1, Dispatchers.IO, true)
+        val viewmodel = TimelineViewModel(repository, 1, 1, dispatcher, true)
         viewmodel.init().join()
 
         // それ以降は失敗

@@ -5,8 +5,9 @@ import androidx.test.core.app.ApplicationProvider
 import com.example.programmersnsandroidclient.model.*
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -19,7 +20,7 @@ import retrofit2.mock.MockRetrofit
 import retrofit2.mock.NetworkBehavior
 import java.util.concurrent.TimeUnit
 
-// TODO: kotlinx-coroutines-test を使った実装にする
+@ExperimentalCoroutinesApi
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [30])
 class SnsRepositoryTest {
@@ -40,13 +41,14 @@ class SnsRepositoryTest {
 
     private val appContext = ApplicationProvider.getApplicationContext<Context>()
     private val userDao = mock(UserDao::class.java)
+    private val dispatcher = StandardTestDispatcher()
     private val repository =
         SnsRepository(
             service,
             appContext,
             userDao,
             shouldUseFullIdAsUnregisteredUserName = true,
-            Dispatchers.IO
+            dispatcher
         )
 
     private val dummyTimeline = listOf(
@@ -78,15 +80,13 @@ class SnsRepositoryTest {
     }
 
     @Test
-    fun fetchTimeline_success() {
+    fun fetchTimeline_success() = runTest(dispatcher) {
         setUpService(true)
 
         // refreshされた後のUserCacheを定義
         `when`(userDao.getUser(dummyCurrentUserId)).thenReturn(dummyCurrentUser)
 
-        val actual = runBlocking {
-            repository.fetchTimeline(1, true)
-        }
+        val actual = repository.fetchTimeline(1, true)
 
         verify(userDao, times(1)).insertUsers(dummyUsers)
         verify(userDao, times(1)).getUser(dummyCurrentUserId)
@@ -97,15 +97,13 @@ class SnsRepositoryTest {
     }
 
     @Test
-    fun fetchTimeline_failure() {
+    fun fetchTimeline_failure() = runTest(dispatcher) {
         setUpService(false)
 
         // refreshされた後のUserCacheを定義
         `when`(userDao.getUser(dummyCurrentUserId)).thenReturn(dummyCurrentUser)
 
-        val actual = runBlocking {
-            repository.fetchTimeline(1, true)
-        }
+        val actual = repository.fetchTimeline(1, true)
 
         verify(userDao, times(0)).insertUsers(dummyUsers)
         verify(userDao, times(0)).getUser(dummyCurrentUserId)
@@ -113,7 +111,7 @@ class SnsRepositoryTest {
     }
 
     @Test
-    fun fetchTimeline_newUserAndContentAdded_refresh() {
+    fun fetchTimeline_newUserAndContentAdded_refresh() = runTest(dispatcher) {
         setUpService(true)
 
         // 事前にUserCacheをrefreshしたものとする。
@@ -140,9 +138,7 @@ class SnsRepositoryTest {
         `when`(userDao.getUser(newUser.id)).thenReturn(newUser)
 
         // UserCacheをrefreshすることで、新しいUserが投稿したContentが取得される。
-        val actual = runBlocking {
-            repository.fetchTimeline(2, true)
-        }
+        val actual = repository.fetchTimeline(2, true)
 
         verify(userDao, times(1)).insertUsers(latestUsers)
         verify(userDao, times(1)).getUser(dummyCurrentUserId)
@@ -155,7 +151,7 @@ class SnsRepositoryTest {
     }
 
     @Test
-    fun fetchTimeline_newUserAndContentAdded_notRefresh() {
+    fun fetchTimeline_newUserAndContentAdded_notRefresh() = runTest(dispatcher) {
         setUpService(true)
 
         // 事前にUserCacheをrefreshしたものとする。
@@ -180,9 +176,7 @@ class SnsRepositoryTest {
 
         // UserCacheをrefreshしない場合
         // UserCacheに新しいUserが存在しないので、未登録ユーザーが投稿したContentとして扱われる。
-        val actual = runBlocking {
-            repository.fetchTimeline(2, false)
-        }
+        val actual = repository.fetchTimeline(2, false)
 
         verify(userDao, times(0)).insertUsers(latestUsers)
         verify(userDao, times(1)).getUser(dummyCurrentUserId)
@@ -195,66 +189,56 @@ class SnsRepositoryTest {
     }
 
     @Test
-    fun fetchUser_success() {
+    fun fetchUser_success() = runTest(dispatcher) {
         setUpService(true)
 
-        val actual = runBlocking {
-            repository.fetchUser("dummy_user_id")
-        }
+        val actual = repository.fetchUser("dummy_user_id")
+
         val expected = SnsUser("dummy_user_id", "dummy_name", "dummy_description")
         assertEquals(expected, actual)
     }
 
     @Test
-    fun fetchUser_failure() {
+    fun fetchUser_failure() = runTest(dispatcher) {
         setUpService(false)
 
-        val actual = runBlocking {
-            repository.fetchUser("dummy_user_id")
-        }
+        val actual = repository.fetchUser("dummy_user_id")
+
         assertNull(actual)
     }
 
     @Test
-    fun sendSnsPost_success() {
+    fun sendSnsPost_success() = runTest(dispatcher) {
         setUpService(true)
 
-        val isSuccessful = runBlocking {
-            repository.sendSnsPost("dummy_text2")
-        }
+        val isSuccessful = repository.sendSnsPost("dummy_text2")
 
         assertTrue(isSuccessful)
     }
 
     @Test
-    fun sendSnsPost_failure() {
+    fun sendSnsPost_failure() = runTest(dispatcher) {
         setUpService(false)
 
-        val isSuccessful = runBlocking {
-            repository.sendSnsPost("dummy_text2")
-        }
+        val isSuccessful = repository.sendSnsPost("dummy_text2")
 
         assertFalse(isSuccessful)
     }
 
     @Test
-    fun updateUser_success() {
+    fun updateUser_success() = runTest(dispatcher) {
         setUpService(true)
 
-        val actualUserId = runBlocking {
-            repository.updateUser("dummy_name2", "dummy_description2")
-        }
+        val actualUserId = repository.updateUser("dummy_name2", "dummy_description2")
 
         assertEquals(dummyCurrentUserId, actualUserId)
     }
 
     @Test
-    fun updateUser_failure() {
+    fun updateUser_failure() = runTest(dispatcher) {
         setUpService(false)
 
-        val actualUserId = runBlocking {
-            repository.updateUser("dummy_name2", "dummy_description2")
-        }
+        val actualUserId = repository.updateUser("dummy_name2", "dummy_description2")
 
         assertNull(actualUserId)
     }

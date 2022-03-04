@@ -8,7 +8,9 @@ import com.example.programmersnsandroidclient.viewmodel.SendSnsPostViewModel
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -22,7 +24,7 @@ import retrofit2.mock.MockRetrofit
 import retrofit2.mock.NetworkBehavior
 import java.util.concurrent.TimeUnit
 
-// TODO: kotlinx-coroutines-test を使った実装にする
+@ExperimentalCoroutinesApi
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [30])
 class SendSnsPostViewModelTest {
@@ -45,13 +47,14 @@ class SendSnsPostViewModelTest {
 
     private val appContext = ApplicationProvider.getApplicationContext<Context>()
     private val userDao = Mockito.mock(UserDao::class.java)
+    private val dispatcher = StandardTestDispatcher()
     private val repository =
         SnsRepository(
             service,
             appContext,
             userDao,
             shouldUseFullIdAsUnregisteredUserName = true,
-            Dispatchers.IO
+            dispatcher
         )
 
     private val viewmodel = SendSnsPostViewModel(repository, Dispatchers.IO)
@@ -92,7 +95,7 @@ class SendSnsPostViewModelTest {
     }
 
     @Test
-    fun sendSnsPost_success() = runBlocking {
+    fun sendSnsPost_success() = runTest(dispatcher) {
         setUpService(true)
         setUpUserDao()
 
@@ -103,7 +106,7 @@ class SendSnsPostViewModelTest {
     }
 
     @Test
-    fun sendSnsPost_failure() = runBlocking {
+    fun sendSnsPost_failure() = runTest(dispatcher) {
         // viewmodel の初期化は成功させる
         setUpService(true)
         setUpUserDao()

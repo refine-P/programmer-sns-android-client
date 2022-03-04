@@ -7,8 +7,9 @@ import com.example.programmersnsandroidclient.model.*
 import com.example.programmersnsandroidclient.viewmodel.UserContentsViewModel
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
@@ -23,7 +24,7 @@ import retrofit2.mock.MockRetrofit
 import retrofit2.mock.NetworkBehavior
 import java.util.concurrent.TimeUnit
 
-// TODO: kotlinx-coroutines-test を使った実装にする
+@ExperimentalCoroutinesApi
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [30])
 class UserContentsViewModelTest {
@@ -46,13 +47,14 @@ class UserContentsViewModelTest {
 
     private val appContext = ApplicationProvider.getApplicationContext<Context>()
     private val userDao = mock(UserDao::class.java)
+    private val dispatcher = StandardTestDispatcher()
     private val repository =
         SnsRepository(
             service,
             appContext,
             userDao,
             shouldUseFullIdAsUnregisteredUserName = true,
-            Dispatchers.IO
+            dispatcher
         )
 
     private val dummyTimeline = listOf(
@@ -101,12 +103,12 @@ class UserContentsViewModelTest {
     }
 
     @Test
-    fun init_success() = runBlocking {
+    fun init_success() = runTest(dispatcher) {
         setUpService(true)
         setUpUserCache()
 
         val viewmodel =
-            UserContentsViewModel(repository, dummyCurrentUserId, 1, 1, Dispatchers.IO, true)
+            UserContentsViewModel(repository, dummyCurrentUserId, 1, 1, dispatcher, true)
         val job = viewmodel.init()
 
         // 初期化処理の直前の状態
@@ -127,12 +129,12 @@ class UserContentsViewModelTest {
     }
 
     @Test
-    fun init_failure() = runBlocking {
+    fun init_failure() = runTest(dispatcher) {
         setUpService(false)
         setUpUserCache()
 
         val viewmodel =
-            UserContentsViewModel(repository, dummyCurrentUserId, 1, 1, Dispatchers.IO, true)
+            UserContentsViewModel(repository, dummyCurrentUserId, 1, 1, dispatcher, true)
         val job = viewmodel.init()
 
         // 初期化処理の直前の状態
@@ -149,12 +151,12 @@ class UserContentsViewModelTest {
     }
 
     @Test
-    fun refresh_success() = runBlocking {
+    fun refresh_success() = runTest(dispatcher) {
         // 開始時点では対象ユーザーの2つめの投稿が存在しない状態にする。
         setUpService(true, 2)
         setUpUserCache()
         val viewmodel =
-            UserContentsViewModel(repository, dummyCurrentUserId, 1, 1, Dispatchers.IO, true)
+            UserContentsViewModel(repository, dummyCurrentUserId, 1, 1, dispatcher, true)
         viewmodel.init().join()
 
         // loadMoreを実行することで、投稿の数の上限を2にする。
@@ -186,12 +188,12 @@ class UserContentsViewModelTest {
     }
 
     @Test
-    fun refresh_failure() = runBlocking {
+    fun refresh_failure() = runTest(dispatcher) {
         // 開始時点では対象ユーザーの2つめの投稿が存在しない状態にする。
         setUpService(true, 2)
         setUpUserCache()
         val viewmodel =
-            UserContentsViewModel(repository, dummyCurrentUserId, 1, 1, Dispatchers.IO, true)
+            UserContentsViewModel(repository, dummyCurrentUserId, 1, 1, dispatcher, true)
         viewmodel.init().join()
 
         // loadMoreを実行することで、投稿の数の上限を2にする。
@@ -219,12 +221,12 @@ class UserContentsViewModelTest {
     }
 
     @Test
-    fun loadmore_success() = runBlocking {
+    fun loadmore_success() = runTest(dispatcher) {
         setUpService(true)
         setUpUserCache()
 
         val viewmodel =
-            UserContentsViewModel(repository, dummyCurrentUserId, 1, 1, Dispatchers.IO, true)
+            UserContentsViewModel(repository, dummyCurrentUserId, 1, 1, dispatcher, true)
         viewmodel.init().join()
 
         val job = viewmodel.loadMore()
@@ -251,12 +253,12 @@ class UserContentsViewModelTest {
     }
 
     @Test
-    fun loadmore_failure() = runBlocking {
+    fun loadmore_failure() = runTest(dispatcher) {
         // viewmodel の初期化は成功させる
         setUpService(true)
         setUpUserCache()
         val viewmodel =
-            UserContentsViewModel(repository, dummyCurrentUserId, 1, 1, Dispatchers.IO, true)
+            UserContentsViewModel(repository, dummyCurrentUserId, 1, 1, dispatcher, true)
         viewmodel.init().join()
 
         // それ以降は失敗
