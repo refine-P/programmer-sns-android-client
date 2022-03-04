@@ -96,15 +96,7 @@ class SnsRepository(
     }
 
     private suspend fun loadSnsPost(postInternal: SnsContentInternal): SnsContent {
-        val unregisteredUserName = getUnregisteredUserName(postInternal._user_id)
-        val contentFromUnregisteredUser =
-            SnsContent(
-                postInternal.id,
-                postInternal._user_id,
-                unregisteredUserName,
-                postInternal.text
-            )
-        val user = loadUserFromCache(postInternal._user_id) ?: return contentFromUnregisteredUser
+        val user = loadUserFromCache(postInternal._user_id)
         return SnsContent(postInternal.id, postInternal._user_id, user.name, postInternal.text)
     }
 

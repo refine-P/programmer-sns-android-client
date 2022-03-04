@@ -12,9 +12,17 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="end"
         android:orientation="vertical"
         tools:context=".view.UserProfileFragment">
+
+        <ImageView
+            android:id="@+id/sns_user_icon"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:contentDescription="@string/icon_description" />
 
         <TextView
             android:id="@+id/sns_user_name"
@@ -57,6 +65,7 @@
 
         <Button
             android:id="@+id/edit_button"
+            android:layout_gravity="end"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"

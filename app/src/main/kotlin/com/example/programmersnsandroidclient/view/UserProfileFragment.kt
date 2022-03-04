@@ -11,6 +11,8 @@ import com.example.programmersnsandroidclient.R
 import com.example.programmersnsandroidclient.databinding.FragmentUserProfileBinding
 import com.example.programmersnsandroidclient.viewmodel.SnsUserViewModel
 import com.google.android.material.snackbar.Snackbar
+import com.pixplicity.sharp.Sharp
+import jdenticon.Jdenticon
 
 class UserProfileFragment : Fragment() {
     private val snsUserViewModel: SnsUserViewModel by activityViewModels()
@@ -25,6 +27,11 @@ class UserProfileFragment : Fragment() {
 
         binding.editButton.setOnClickListener {
             findNavController().navigate(R.id.action_edit_user_profile)
+        }
+        snsUserViewModel.currentUser.observe(viewLifecycleOwner) {
+            binding.snsUserIcon.setImageDrawable(
+                Sharp.loadString(Jdenticon.toSvg(it.id, 56)).drawable
+            )
         }
 
         val savedStateHandle = findNavController().currentBackStackEntry!!.savedStateHandle

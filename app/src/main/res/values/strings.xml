@@ -22,4 +22,5 @@
     <string name="update_success">更新に成功しました！</string>
     <string name="send_failure">投稿に失敗しました…</string>
     <string name="send_success">投稿に成功しました！</string>
+    <string name="icon_description">Icon</string>
 </resources>

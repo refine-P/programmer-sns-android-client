@@ -11,7 +11,9 @@ import com.example.programmersnsandroidclient.R
 import com.example.programmersnsandroidclient.databinding.ActivityMainBinding
 import com.example.programmersnsandroidclient.databinding.DrawerHeaderBinding
 import com.example.programmersnsandroidclient.viewmodel.SnsUserViewModel
+import com.pixplicity.sharp.Sharp
 import dagger.hilt.android.AndroidEntryPoint
+import jdenticon.Jdenticon
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -35,6 +37,12 @@ class MainActivity : AppCompatActivity() {
 
         val userContentsMenu = activityMainBinding.navView.menu.findItem(R.id.user_contents)
         userContentsMenu.isEnabled = false
+
+        val drawerHeaderBinding =
+            DrawerHeaderBinding.inflate(layoutInflater, activityMainBinding.navView, false)
+        drawerHeaderBinding.lifecycleOwner = this
+        drawerHeaderBinding.viewModel = snsUserViewModel
+
         snsUserViewModel.currentUser.observe(this) { user ->
             userContentsMenu.isEnabled = true
             userContentsMenu.setOnMenuItemClickListener {
@@ -42,12 +50,10 @@ class MainActivity : AppCompatActivity() {
                 navController.navigate(action)
                 false  // false じゃないとドロワーが自動で閉じない
             }
+            drawerHeaderBinding.userIconHeader.setImageDrawable(
+                Sharp.loadString(Jdenticon.toSvg(user.id, 56)).drawable
+            )
         }
-
-        val drawerHeaderBinding =
-            DrawerHeaderBinding.inflate(layoutInflater, activityMainBinding.navView, false)
-        drawerHeaderBinding.lifecycleOwner = this
-        drawerHeaderBinding.viewModel = snsUserViewModel
 
         // app:headerLayout を NavigationView に追加しても動かないので、ここで動的に追加する
         // https://kcpoipoi.hatenablog.com/entry/2019/01/02/204840

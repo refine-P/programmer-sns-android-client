@@ -3,12 +3,15 @@ package com.example.programmersnsandroidclient.view.adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.programmersnsandroidclient.R
 import com.example.programmersnsandroidclient.model.SnsContent
+import com.pixplicity.sharp.Sharp
+import jdenticon.Jdenticon
 
 private object DiffCallback : DiffUtil.ItemCallback<SnsContent>() {
     override fun areItemsTheSame(oldItem: SnsContent, newItem: SnsContent): Boolean {
@@ -24,6 +27,7 @@ class TimelineAdapter(
     private val goToUserContentsFragment: (userId: String, userName: String) -> Unit
 ) : ListAdapter<SnsContent, TimelineAdapter.ViewHolder>(DiffCallback) {
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val userIcon: ImageView = view.findViewById(R.id.user_icon)
         val userName: TextView = view.findViewById(R.id.user_name)
         val content: TextView = view.findViewById(R.id.content)
     }
@@ -42,8 +46,21 @@ class TimelineAdapter(
         // Get element from your dataset at this position and replace the
         // contents of the view with that element
         val snsContent = getItem(position)
+
+        viewHolder.userIcon.setImageDrawable(
+            Sharp.loadString(
+                Jdenticon.toSvg(snsContent.userId, 40)
+            ).drawable
+        )
         viewHolder.userName.text = snsContent.userName
         viewHolder.content.text = snsContent.content
+
+        viewHolder.userIcon.setOnClickListener {
+            goToUserContentsFragment(
+                snsContent.userId,
+                snsContent.userName
+            )
+        }
         viewHolder.userName.setOnClickListener {
             goToUserContentsFragment(
                 snsContent.userId,
