@@ -1,37 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
 
     <data>
 
+        <import type="android.view.View" />
+
         <variable
-            name="viewModel"
-            type="com.example.programmersnsandroidclient.viewmodel.SnsUserViewModel" />
+            name="user"
+            type="androidx.lifecycle.LiveData&lt;com.example.programmersnsandroidclient.model.SnsUser>" />
     </data>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:gravity="end"
         android:orientation="vertical"
-        tools:context=".view.UserProfileFragment">
+        android:layout_marginBottom="24dp">
 
         <TextView
-            android:id="@+id/sns_user_name"
+            android:id="@+id/profile_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="start"
             android:layout_marginTop="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
-            android:text="@{viewModel.currentUser.name!=null ? viewModel.currentUser.name : @string/unregistered_user_name}"
+            android:text="@{user.name}"
             android:hint="@string/sns_user_name"
             android:textAppearance="@style/TextAppearance.AppCompat.Large"
             android:textColor="?android:textColorPrimary"
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/sns_user_id"
+            android:id="@+id/profile_id"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
@@ -40,32 +41,21 @@
             android:maxLines="1"
             android:autoSizeTextType="uniform"
             android:hint="@string/sns_user_id"
-            android:text="@{viewModel.currentUser.id!=null ? viewModel.currentUser.id : @string/unregistered_user_id}" />
+            android:text="@{user.id}" />
 
         <TextView
-            android:id="@+id/sns_user_discription"
+            android:id="@+id/profile_discription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
-            android:text="@{viewModel.currentUser.description!=null ? viewModel.currentUser.description : @string/instruction_for_unregistered_user}"
+            android:text="@{user.description}"
+            android:visibility="@{user.description.length>0 ? View.VISIBLE : View.GONE}"
             android:hint="@string/sns_user_description"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
             android:textColor="?android:textColorPrimary"
             android:autoLink="web" />
-
-        <Button
-            android:id="@+id/edit_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:text="@string/edit" />
-
-        <androidx.coordinatorlayout.widget.CoordinatorLayout
-            android:id="@+id/update_snackbar"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
 
     </LinearLayout>
 </layout>

@@ -46,6 +46,12 @@ class SnsRepository(
         return service.fetchUser(userId).body()
     }
 
+    suspend fun loadUserFromCache(userId: String): SnsUser {
+        return withContext(dispatcher) {
+            userDao.getUser(userId)
+        } ?: SnsUser(userId, getUnregisteredUserName(userId), "")
+    }
+
     suspend fun sendSnsPost(content: String): Boolean {
         return service.sendSnsPost(SnsPost(content, null, null)).isSuccessful
     }
@@ -90,12 +96,7 @@ class SnsRepository(
     }
 
     private suspend fun loadSnsPost(postInternal: SnsContentInternal): SnsContent {
-        // TODO: 未登録ユーザーの投稿の表示/非表示を設定で切り替えられると嬉しいかも？
-        val unregisteredUserName = if (shouldUseFullIdAsUnregisteredUserName) {
-            postInternal._user_id
-        } else {
-            postInternal._user_id.take(8) + " [未登録]"
-        }
+        val unregisteredUserName = getUnregisteredUserName(postInternal._user_id)
         val contentFromUnregisteredUser =
             SnsContent(
                 postInternal.id,
@@ -103,9 +104,15 @@ class SnsRepository(
                 unregisteredUserName,
                 postInternal.text
             )
-        val user = withContext(dispatcher) {
-            userDao.getUser(postInternal._user_id)
-        } ?: return contentFromUnregisteredUser
+        val user = loadUserFromCache(postInternal._user_id) ?: return contentFromUnregisteredUser
         return SnsContent(postInternal.id, postInternal._user_id, user.name, postInternal.text)
+    }
+
+    private fun getUnregisteredUserName(userId: String): String {
+        return if (shouldUseFullIdAsUnregisteredUserName) {
+            userId
+        } else {
+            userId.take(8) + " [未登録]"
+        }
     }
 }

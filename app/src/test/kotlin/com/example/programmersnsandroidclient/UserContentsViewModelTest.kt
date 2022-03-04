@@ -109,14 +109,17 @@ class UserContentsViewModelTest {
 
         val viewmodel =
             UserContentsViewModel(repository, dummyCurrentUserId, 1, 1, dispatcher, true)
-        val job = viewmodel.init()
+        val initJob = viewmodel.init()
+        val initTargetUserJob = viewmodel.initTargetUser()
 
         // 初期化処理の直前の状態
         Assert.assertNull(viewmodel.timeline.value)
         Assert.assertEquals(true, viewmodel.isLoading.value)
         Assert.assertEquals(false, viewmodel.isRefreshing.value)
+        Assert.assertNull(viewmodel.targetUser.value)
 
-        job.join()
+        initJob.join()
+        initTargetUserJob.join()
 
         // 初期化処理完了時の状態
         val expected = listOf(
@@ -126,6 +129,7 @@ class UserContentsViewModelTest {
         Assert.assertEquals(TimelineState.INIT, viewmodel.timeline.value?.state)
         Assert.assertEquals(false, viewmodel.isLoading.value)
         Assert.assertEquals(false, viewmodel.isRefreshing.value)
+        Assert.assertEquals(dummyCurrentUser, viewmodel.targetUser.value)
     }
 
     @Test
@@ -135,19 +139,23 @@ class UserContentsViewModelTest {
 
         val viewmodel =
             UserContentsViewModel(repository, dummyCurrentUserId, 1, 1, dispatcher, true)
-        val job = viewmodel.init()
+        val initJob = viewmodel.init()
+        val initTargetUserJob = viewmodel.initTargetUser()
 
         // 初期化処理の直前の状態
         Assert.assertNull(viewmodel.timeline.value)
         Assert.assertEquals(true, viewmodel.isLoading.value)
         Assert.assertEquals(false, viewmodel.isRefreshing.value)
+        Assert.assertNull(viewmodel.targetUser.value)
 
-        job.join()
+        initJob.join()
+        initTargetUserJob.join()
 
         // 初期化処理完了時の状態
         Assert.assertNull(viewmodel.timeline.value)
         Assert.assertEquals(false, viewmodel.isLoading.value)
         Assert.assertEquals(false, viewmodel.isRefreshing.value)
+        Assert.assertEquals(dummyCurrentUser, viewmodel.targetUser.value)  // ローカルにあるので取得可能
     }
 
     @Test
@@ -158,6 +166,7 @@ class UserContentsViewModelTest {
         val viewmodel =
             UserContentsViewModel(repository, dummyCurrentUserId, 1, 1, dispatcher, true)
         viewmodel.init().join()
+        viewmodel.initTargetUser().join()
 
         // loadMoreを実行することで、投稿の数の上限を2にする。
         viewmodel.loadMore().join()
@@ -195,6 +204,7 @@ class UserContentsViewModelTest {
         val viewmodel =
             UserContentsViewModel(repository, dummyCurrentUserId, 1, 1, dispatcher, true)
         viewmodel.init().join()
+        viewmodel.initTargetUser().join()
 
         // loadMoreを実行することで、投稿の数の上限を2にする。
         viewmodel.loadMore().join()
@@ -228,6 +238,7 @@ class UserContentsViewModelTest {
         val viewmodel =
             UserContentsViewModel(repository, dummyCurrentUserId, 1, 1, dispatcher, true)
         viewmodel.init().join()
+        viewmodel.initTargetUser().join()
 
         val job = viewmodel.loadMore()
 
@@ -260,6 +271,7 @@ class UserContentsViewModelTest {
         val viewmodel =
             UserContentsViewModel(repository, dummyCurrentUserId, 1, 1, dispatcher, true)
         viewmodel.init().join()
+        viewmodel.initTargetUser().join()
 
         // それ以降は失敗
         setUpService(false)

@@ -244,6 +244,36 @@ class SnsRepositoryTest {
     }
 
     @Test
+    fun loadUserFromCache_registeredUser() = runTest(dispatcher) {
+        setUpService(true)
+        // 事前にUserCacheをrefreshしたものとする。
+        // その際のUserCacheをここに定義。
+        `when`(userDao.getUser(dummyCurrentUserId)).thenReturn(dummyCurrentUser)
+
+        val actualUser = repository.loadUserFromCache(dummyCurrentUserId)
+
+        assertEquals(dummyCurrentUser, actualUser)
+    }
+
+    @Test
+    fun loadUserFromCache_unregisteredUser() = runTest(dispatcher) {
+        setUpService(true)
+        // 事前にUserCacheをrefreshしたものとする。
+        // その際のUserCacheをここに定義。
+        `when`(userDao.getUser(dummyCurrentUserId)).thenReturn(dummyCurrentUser)
+
+        val unregisteredUserId = "unregistered_user_id"
+        val actualUser = repository.loadUserFromCache(unregisteredUserId)
+
+        val expectedUser = SnsUser(
+            unregisteredUserId,
+            unregisteredUserId,
+            ""
+        )
+        assertEquals(expectedUser, actualUser)
+    }
+
+    @Test
     fun currentUserId() {
         assertNull(repository.loadCurrentUserId())
         val userId = "dummy_user_id"

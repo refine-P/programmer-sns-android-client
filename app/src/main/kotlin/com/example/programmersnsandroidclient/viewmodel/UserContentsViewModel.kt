@@ -1,15 +1,16 @@
 package com.example.programmersnsandroidclient.viewmodel
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.*
 import com.example.programmersnsandroidclient.model.SnsContent
 import com.example.programmersnsandroidclient.model.SnsRepository
+import com.example.programmersnsandroidclient.model.SnsUser
 import com.example.programmersnsandroidclient.model.TimelineState
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class UserContentsViewModel(
     private val snsRepository: SnsRepository,
@@ -36,6 +37,18 @@ class UserContentsViewModel(
         Dispatchers.IO,
         false
     )
+
+    private val _targetUser: MutableLiveData<SnsUser> = MutableLiveData()
+    val targetUser: LiveData<SnsUser> = _targetUser
+
+    init {
+        if (!willInitializeManually) initTargetUser()
+    }
+
+    fun initTargetUser() = viewModelScope.launch(dispatcher) {
+        val user = snsRepository.loadUserFromCache(targetUserId)
+        _targetUser.postValue(user)
+    }
 
     override fun getShouldRefreshUserCache(state: TimelineState): Boolean {
         // ユーザーのIDがgivenなら、UserCacheにそのIDは存在してるはず

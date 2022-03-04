@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 abstract class AbstractContentsViewModel(
     initialTimelineNumLimit: Int,
     private val incrementalTimelineNumLimit: Int,
-    private val dispatcher: CoroutineDispatcher,
+    protected val dispatcher: CoroutineDispatcher,
     willInitializeManually: Boolean,  // テスト用フラグ。テストでは手動で初期化関数を走らせたい。
 ) : ViewModel() {
     // TODO: 定数用のファイルを作って、そこにこれを移動した方が良いかも？

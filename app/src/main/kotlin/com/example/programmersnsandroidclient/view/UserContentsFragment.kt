@@ -14,6 +14,7 @@ import com.example.programmersnsandroidclient.databinding.FragmentUserContentsBi
 import com.example.programmersnsandroidclient.model.TimelineState
 import com.example.programmersnsandroidclient.view.adapter.LoadMoreAdapter
 import com.example.programmersnsandroidclient.view.adapter.LoadMoreArgs
+import com.example.programmersnsandroidclient.view.adapter.ProfileAdapter
 import com.example.programmersnsandroidclient.view.adapter.TimelineAdapter
 import com.example.programmersnsandroidclient.viewmodel.UserContentsViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -40,6 +41,7 @@ class UserContentsFragment : Fragment() {
         binding.viewModel = userContentsViewModel
         binding.lifecycleOwner = viewLifecycleOwner
 
+        val profileAdapter = ProfileAdapter(viewLifecycleOwner, userContentsViewModel.targetUser)
         val timelineAdapter = TimelineAdapter { _, _ -> }
         val loadMoreAdapter =
             LoadMoreAdapter(viewLifecycleOwner, LoadMoreArgs(userContentsViewModel.isLoading) {
@@ -51,7 +53,7 @@ class UserContentsFragment : Fragment() {
         recyclerView.addItemDecoration(
             DividerItemDecoration(context, LinearLayoutManager(context).orientation)
         )
-        recyclerView.adapter = ConcatAdapter(timelineAdapter, loadMoreAdapter)
+        recyclerView.adapter = ConcatAdapter(profileAdapter, timelineAdapter, loadMoreAdapter)
 
         userContentsViewModel.timeline.observe(viewLifecycleOwner) { timeline ->
             // タイムラインのInit or Refresh時は最上部にスクロールする
