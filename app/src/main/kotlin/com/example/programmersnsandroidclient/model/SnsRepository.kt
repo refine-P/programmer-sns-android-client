@@ -5,6 +5,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 // TODO: 異常系の処理について検討した方が良いかも？
@@ -97,7 +99,19 @@ class SnsRepository(
 
     private suspend fun loadSnsPost(postInternal: SnsContentInternal): SnsContent {
         val user = loadUserFromCache(postInternal._user_id)
-        return SnsContent(postInternal.id, postInternal._user_id, user.name, postInternal.text)
+        val createdAt = try {
+            ZonedDateTime.parse(postInternal._created_at)
+                .format(DateTimeFormatter.ofPattern("yyyy年M月d日 HH:mm"))
+        } catch (e: Exception) {
+            ""
+        }
+        return SnsContent(
+            postInternal.id,
+            postInternal._user_id,
+            user.name,
+            postInternal.text,
+            createdAt
+        )
     }
 
     private fun getUnregisteredUserName(userId: String): String {

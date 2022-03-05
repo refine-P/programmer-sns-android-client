@@ -41,5 +41,12 @@
             android:layout_height="wrap_content"
             android:textColor="?android:textColorPrimary"
             android:autoLink="web" />
+
+        <TextView
+            android:id="@+id/created_at"
+            android:text="0000年0月0日 00:00"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="end" />
     </LinearLayout>
 </LinearLayout>

@@ -4,7 +4,8 @@ data class SnsContent(
     val contentId: String,
     val userId: String,
     val userName: String,
-    val content: String
+    val content: String,
+    val createdAt: String = ""
 )
 
 data class SnsContentInternal(

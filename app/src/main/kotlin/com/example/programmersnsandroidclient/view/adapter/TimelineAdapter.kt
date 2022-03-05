@@ -30,6 +30,7 @@ class TimelineAdapter(
         val userIcon: ImageView = view.findViewById(R.id.user_icon)
         val userName: TextView = view.findViewById(R.id.user_name)
         val content: TextView = view.findViewById(R.id.content)
+        val createdAt: TextView = view.findViewById(R.id.created_at)
     }
 
     // Create new views (invoked by the layout manager)
@@ -54,6 +55,12 @@ class TimelineAdapter(
         )
         viewHolder.userName.text = snsContent.userName
         viewHolder.content.text = snsContent.content
+        viewHolder.createdAt.text = snsContent.createdAt
+        viewHolder.createdAt.visibility = if (snsContent.createdAt.isNotEmpty()) {
+            View.VISIBLE
+        } else {
+            View.GONE
+        }
 
         viewHolder.userIcon.setOnClickListener {
             goToUserContentsFragment(
