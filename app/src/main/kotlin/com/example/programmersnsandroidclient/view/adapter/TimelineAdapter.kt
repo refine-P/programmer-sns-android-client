@@ -53,26 +53,28 @@ class TimelineAdapter(
                 Jdenticon.toSvg(snsContent.userId, 40)
             ).drawable
         )
-        viewHolder.userName.text = snsContent.userName
-        viewHolder.content.text = snsContent.content
-        viewHolder.createdAt.text = snsContent.createdAt
-        viewHolder.createdAt.visibility = if (snsContent.createdAt.isNotEmpty()) {
-            View.VISIBLE
-        } else {
-            View.GONE
-        }
-
         viewHolder.userIcon.setOnClickListener {
             goToUserContentsFragment(
                 snsContent.userId,
                 snsContent.userName
             )
         }
+
+        viewHolder.userName.text = snsContent.userName
         viewHolder.userName.setOnClickListener {
             goToUserContentsFragment(
                 snsContent.userId,
                 snsContent.userName
             )
+        }
+
+        viewHolder.content.text = snsContent.content
+
+        viewHolder.createdAt.text = snsContent.createdAt
+        viewHolder.createdAt.visibility = if (snsContent.createdAt.isNotEmpty()) {
+            View.VISIBLE
+        } else {
+            View.GONE
         }
     }
 }
