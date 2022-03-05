@@ -15,12 +15,6 @@
         android:layout_height="match_parent"
         tools:context=".view.TimelineFragment">
 
-        <androidx.coordinatorlayout.widget.CoordinatorLayout
-            android:id="@+id/send_snackbar"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_toStartOf="@id/post_button" />
-
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/post_button"
             android:layout_width="wrap_content"
@@ -60,5 +54,11 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
+            android:id="@+id/send_snackbar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_toStartOf="@id/post_button" />
     </RelativeLayout>
 </layout>
