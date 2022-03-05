@@ -16,7 +16,7 @@ interface VersatileApi {
     @GET("user/{user_id}")
     suspend fun fetchUser(@Path("user_id") userId: String): Response<SnsUser>
 
-    @GET("user/all")
+    @GET("user/all?\$orderby=_updated_at%20asc")
     suspend fun fetchAllUsers(): Response<List<SnsUser>>
 
     @Headers("Authorization: HelloWorld")
