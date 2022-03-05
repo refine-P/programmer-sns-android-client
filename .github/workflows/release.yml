@@ -1,0 +1,50 @@
+name: programmer-sns-android-client-release
+
+# Controls when the workflow will run
+on:
+  push:
+    tags:
+      - "v*.*"
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  release:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+
+      # Gradleのキャッシュ復元
+      - uses: actions/cache@v2
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Test with Gradle
+        run: ./gradlew test --stacktrace
+
+      # コンパイル
+      - name: Run Compile
+        if: success()
+        run: ./gradlew assembleDebug
+
+      # デバッグ APK のアップロード
+      - name: Upload debug APK
+        if: success() && startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ./app/build/outputs/apk/debug/app-debug.apk
