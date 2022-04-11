@@ -24,6 +24,12 @@ import java.util.concurrent.TimeUnit
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [30])
 class SnsRepositoryTest {
+    enum class NetworkState {
+        SUCCESS,
+        HTTP_ERROR,
+        NETWORK_FAILURE,
+    }
+
     private val retrofit = Retrofit.Builder()
         .baseUrl("https://versatileapi.herokuapp.com/api/")
         .addConverterFactory(
@@ -60,16 +66,22 @@ class SnsRepositoryTest {
     private val dummyCurrentUser = dummyUsers[0]
     private val dummyCurrentUserId = dummyCurrentUser.id
 
-    private fun setUpService(isSuccess: Boolean) {
+    private fun setUpService(state: NetworkState) {
         behavior.apply {
             setDelay(0, TimeUnit.MILLISECONDS) // 即座に結果が返ってくるようにする
             setVariancePercent(0)
-            setFailurePercent(0)
-            setErrorPercent(
-                if (isSuccess) {
-                    0
-                } else {
+            setFailurePercent(
+                if (state == NetworkState.NETWORK_FAILURE) {
                     100
+                } else {
+                    0
+                }
+            )
+            setErrorPercent(
+                if (state == NetworkState.HTTP_ERROR) {
+                    100
+                } else {
+                    0
                 }
             )
         }
@@ -81,7 +93,7 @@ class SnsRepositoryTest {
 
     @Test
     fun fetchTimeline_success() = runTest(dispatcher) {
-        setUpService(true)
+        setUpService(NetworkState.SUCCESS)
 
         // refreshされた後のUserCacheを定義
         `when`(userDao.getUser(dummyCurrentUserId)).thenReturn(dummyCurrentUser)
@@ -97,8 +109,22 @@ class SnsRepositoryTest {
     }
 
     @Test
-    fun fetchTimeline_failure() = runTest(dispatcher) {
-        setUpService(false)
+    fun fetchTimeline_HttpError() = runTest(dispatcher) {
+        setUpService(NetworkState.HTTP_ERROR)
+
+        // refreshされた後のUserCacheを定義
+        `when`(userDao.getUser(dummyCurrentUserId)).thenReturn(dummyCurrentUser)
+
+        val actual = repository.fetchTimeline(1, true)
+
+        verify(userDao, times(0)).insertUsers(dummyUsers)
+        verify(userDao, times(0)).getUser(dummyCurrentUserId)
+        assertNull(actual)
+    }
+
+    @Test
+    fun fetchTimeline_NetworkFailure() = runTest(dispatcher) {
+        setUpService(NetworkState.NETWORK_FAILURE)
 
         // refreshされた後のUserCacheを定義
         `when`(userDao.getUser(dummyCurrentUserId)).thenReturn(dummyCurrentUser)
@@ -112,7 +138,7 @@ class SnsRepositoryTest {
 
     @Test
     fun fetchTimeline_newUserAndContentAdded_refresh() = runTest(dispatcher) {
-        setUpService(true)
+        setUpService(NetworkState.SUCCESS)
 
         // 事前にUserCacheをrefreshしたものとする。
         // その際のUserCacheをここに定義。
@@ -152,7 +178,7 @@ class SnsRepositoryTest {
 
     @Test
     fun fetchTimeline_newUserAndContentAdded_notRefresh() = runTest(dispatcher) {
-        setUpService(true)
+        setUpService(NetworkState.SUCCESS)
 
         // 事前にUserCacheをrefreshしたものとする。
         // その際のUserCacheをここに定義。
@@ -190,7 +216,7 @@ class SnsRepositoryTest {
 
     @Test
     fun fetchUser_success() = runTest(dispatcher) {
-        setUpService(true)
+        setUpService(NetworkState.SUCCESS)
 
         val actual = repository.fetchUser("dummy_user_id")
 
@@ -199,8 +225,17 @@ class SnsRepositoryTest {
     }
 
     @Test
-    fun fetchUser_failure() = runTest(dispatcher) {
-        setUpService(false)
+    fun fetchUser_HttpError() = runTest(dispatcher) {
+        setUpService(NetworkState.HTTP_ERROR)
+
+        val actual = repository.fetchUser("dummy_user_id")
+
+        assertNull(actual)
+    }
+
+    @Test
+    fun fetchUser_NetworkFailure() = runTest(dispatcher) {
+        setUpService(NetworkState.NETWORK_FAILURE)
 
         val actual = repository.fetchUser("dummy_user_id")
 
@@ -209,7 +244,7 @@ class SnsRepositoryTest {
 
     @Test
     fun sendSnsPost_success() = runTest(dispatcher) {
-        setUpService(true)
+        setUpService(NetworkState.SUCCESS)
 
         val isSuccessful = repository.sendSnsPost("dummy_text2")
 
@@ -217,8 +252,17 @@ class SnsRepositoryTest {
     }
 
     @Test
-    fun sendSnsPost_failure() = runTest(dispatcher) {
-        setUpService(false)
+    fun sendSnsPost_HttpError() = runTest(dispatcher) {
+        setUpService(NetworkState.HTTP_ERROR)
+
+        val isSuccessful = repository.sendSnsPost("dummy_text2")
+
+        assertFalse(isSuccessful)
+    }
+
+    @Test
+    fun sendSnsPost_NetworkFailure() = runTest(dispatcher) {
+        setUpService(NetworkState.NETWORK_FAILURE)
 
         val isSuccessful = repository.sendSnsPost("dummy_text2")
 
@@ -227,7 +271,7 @@ class SnsRepositoryTest {
 
     @Test
     fun updateUser_success() = runTest(dispatcher) {
-        setUpService(true)
+        setUpService(NetworkState.SUCCESS)
 
         val actualUserId = repository.updateUser("dummy_name2", "dummy_description2")
 
@@ -235,8 +279,17 @@ class SnsRepositoryTest {
     }
 
     @Test
-    fun updateUser_failure() = runTest(dispatcher) {
-        setUpService(false)
+    fun updateUser_HttpError() = runTest(dispatcher) {
+        setUpService(NetworkState.HTTP_ERROR)
+
+        val actualUserId = repository.updateUser("dummy_name2", "dummy_description2")
+
+        assertNull(actualUserId)
+    }
+
+    @Test
+    fun updateUser_NetworkFailure() = runTest(dispatcher) {
+        setUpService(NetworkState.NETWORK_FAILURE)
 
         val actualUserId = repository.updateUser("dummy_name2", "dummy_description2")
 
@@ -245,7 +298,7 @@ class SnsRepositoryTest {
 
     @Test
     fun loadUserFromCache_registeredUser() = runTest(dispatcher) {
-        setUpService(true)
+        setUpService(NetworkState.SUCCESS)
         // 事前にUserCacheをrefreshしたものとする。
         // その際のUserCacheをここに定義。
         `when`(userDao.getUser(dummyCurrentUserId)).thenReturn(dummyCurrentUser)
@@ -257,7 +310,7 @@ class SnsRepositoryTest {
 
     @Test
     fun loadUserFromCache_unregisteredUser() = runTest(dispatcher) {
-        setUpService(true)
+        setUpService(NetworkState.SUCCESS)
         // 事前にUserCacheをrefreshしたものとする。
         // その際のUserCacheをここに定義。
         `when`(userDao.getUser(dummyCurrentUserId)).thenReturn(dummyCurrentUser)

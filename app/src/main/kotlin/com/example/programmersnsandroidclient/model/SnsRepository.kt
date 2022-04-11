@@ -1,15 +1,17 @@
 package com.example.programmersnsandroidclient.model
 
 import android.content.Context
+import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import retrofit2.HttpException
+import java.io.IOException
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
-// TODO: 異常系の処理について検討した方が良いかも？
 class SnsRepository(
     private val service: VersatileApi,
     appContext: Context,
@@ -26,6 +28,10 @@ class SnsRepository(
         @ApplicationContext appContext: Context,
         userDao: UserDao
     ) : this(service, appContext, userDao, false, Dispatchers.IO)
+
+    companion object {
+        const val TAG = "SnsRepository"
+    }
 
     private val prefs = appContext.getSharedPreferences("user_info", Context.MODE_PRIVATE)
 
@@ -45,7 +51,12 @@ class SnsRepository(
     }
 
     suspend fun fetchUser(userId: String): SnsUser? {
-        return service.fetchUser(userId).body()
+        return try {
+            service.fetchUser(userId).body()
+        } catch (e: Exception) {
+            Log.w(TAG, "Can't fetch user due to ${getCauseString(e)}: ${e.message ?: ""}")
+            null
+        }
     }
 
     suspend fun loadUserFromCache(userId: String): SnsUser {
@@ -55,11 +66,24 @@ class SnsRepository(
     }
 
     suspend fun sendSnsPost(content: String): Boolean {
-        return service.sendSnsPost(SnsPost(content, null, null)).isSuccessful
+        return try {
+            service.sendSnsPost(SnsPost(content, null, null)).isSuccessful
+        } catch (e: Exception) {
+            Log.w(TAG, "Can't send a post due to ${getCauseString(e)}: ${e.message ?: ""}")
+            false
+        }
     }
 
     suspend fun updateUser(name: String, description: String): String? {
-        return service.updateUser(UserSetting(name, description)).body()?.id
+        return try {
+            service.updateUser(UserSetting(name, description)).body()?.id
+        } catch (e: Exception) {
+            Log.w(
+                TAG,
+                "Can't update user's infomation due to ${getCauseString(e)}: ${e.message ?: ""}"
+            )
+            null
+        }
     }
 
     fun loadCurrentUserId(): String? {
@@ -72,8 +96,15 @@ class SnsRepository(
 
     suspend fun refreshUserCache() {
         withContext(dispatcher) {
-            service.fetchAllUsers().body()?.let {
-                userDao.insertUsers(it)
+            try {
+                service.fetchAllUsers().body()?.let {
+                    userDao.insertUsers(it)
+                }
+            } catch (e: Exception) {
+                Log.w(
+                    TAG,
+                    "Can't refresh UserCache due to ${getCauseString(e)}: ${e.message ?: ""}"
+                )
             }
         }
     }
@@ -85,15 +116,20 @@ class SnsRepository(
     ): List<SnsContent>? {
         if (shouldRefreshUserCache) refreshUserCache()
 
-        val res = if (userId == null) {  // userIdがnullなら全ユーザーの投稿を取得
-            service.fetchTimeline(timelineNumLimit)
-        } else {
-            service.fetchTimelineWithFilter(timelineNumLimit, "_user_id eq '%s'".format(userId))
-        }
+        try {
+            val res = if (userId == null) {  // userIdがnullなら全ユーザーの投稿を取得
+                service.fetchTimeline(timelineNumLimit)
+            } else {
+                service.fetchTimelineWithFilter(timelineNumLimit, "_user_id eq '%s'".format(userId))
+            }
 
-        val timelineInternal = res.body() ?: return null
-        return timelineInternal.map {
-            loadSnsPost(it)
+            val timelineInternal = res.body() ?: return null
+            return timelineInternal.map {
+                loadSnsPost(it)
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Can't fetch contents due to ${getCauseString(e)}: ${e.message ?: ""}")
+            return null
         }
     }
 
@@ -119,6 +155,14 @@ class SnsRepository(
             userId
         } else {
             userId.take(8) + " [未登録]"
+        }
+    }
+
+    private fun getCauseString(cause: Exception): String {
+        return when (cause) {
+            is IOException -> "network failure"
+            is HttpException -> "HTTP error"
+            else -> "unknown reasons"
         }
     }
 }
